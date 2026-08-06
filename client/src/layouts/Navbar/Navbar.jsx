@@ -2,11 +2,22 @@ import { TopBar, MainNavbar, CategoryBar } from "./";
 
 const Navbar = () => {
   return (
-    <header>
-      <TopBar />
-      <MainNavbar />
-      <CategoryBar />
-    </header>
+    <>
+  <TopBar />
+
+  <div
+    className="
+      sticky
+      top-0
+      z-50
+      bg-white
+      shadow-sm
+    "
+  >
+    <MainNavbar />
+    <CategoryBar />
+  </div>
+</>
   );
 };
 

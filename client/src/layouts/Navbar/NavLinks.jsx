@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { NAV_LINKS } from "@/constants/navbar.config";
 
-const NavLinks = () => {
+const NavLinks = ({ isScrolled }) => {
   return (
     <>
       {NAV_LINKS.map((item) => {
@@ -10,64 +10,61 @@ const NavLinks = () => {
         return (
           <NavLink
             key={item.id}
-            to={item.path}
-            className={({ isActive }) =>
-              `
-                group
-                relative
-                flex
-                min-w-19.5
-                flex-col
-                items-center
-                justify-center
-                gap-1
-                py-2
-                transition-all
-                duration-200
-                select-none
-              `
+            to={
+              item.category
+                ? `${item.path}?category=${encodeURIComponent(item.category)}`
+                : `${item.path}?category=${encodeURIComponent(item.label.toLowerCase())}`
             }
+            className="group relative shrink-0"
           >
             {({ isActive }) => (
-              <>
-                {/* Icon */}
+              <div
+                className={`
+                  flex
+                  items-center
+                  justify-center
+                  transition-all
+                  duration-300
+
+                  ${
+                    isScrolled
+                      ? "gap-1.5 px-1.5 py-2"
+                      : "flex-col gap-1 px-2 py-1"
+                  }
+                `}
+              >
                 <div
                   className={`
                     flex
-                    h-11
-                    w-11
                     items-center
                     justify-center
                     rounded-xl
                     transition-all
-                    duration-200
+                    duration-300
 
-                    ${
-                      isActive
-                        ? "bg-blue-100"
-                        : "group-hover:bg-gray-100"
-                    }
+                    ${isScrolled ? "h-7 w-7" : "h-11 w-11"}
+
+                    ${isActive ? "bg-blue-100" : "group-hover:bg-gray-100"}
                   `}
                 >
                   <Icon
-                    className="
-                      h-6
-                      w-6
-                      text-gray-800
-                      transition-colors
-                      duration-200
-                    "
+                    className={`
+                      transition-all
+                      duration-300
+
+                      ${isScrolled ? "h-4 w-4" : "h-6 w-6"}
+                    `}
                   />
                 </div>
 
-                {/* Label */}
                 <span
                   className={`
                     whitespace-nowrap
-                    text-xs
                     font-medium
-                    transition-colors
-                    duration-200
+                    transition-all
+                    duration-300
+
+                    ${isScrolled ? "text-sm" : "text-xs"}
 
                     ${
                       isActive
@@ -79,20 +76,21 @@ const NavLinks = () => {
                   {item.label}
                 </span>
 
-                {/* Active Bottom Line */}
                 {isActive && (
                   <span
                     className="
                       absolute
-                      -bottom-2.25
-                      h-0.75
-                      w-14
+                      -bottom-2
+                      left-1/2
+                      h-[3px]
+                      w-10
+                      -translate-x-1/2
                       rounded-full
-                      bg-blue-600
+                      bg-[#0B57D0]
                     "
                   />
                 )}
-              </>
+              </div>
             )}
           </NavLink>
         );
