@@ -1,5 +1,6 @@
 import {Outlet} from "react-router-dom";
 import { Navbar } from "./Navbar";
+import { Footer } from "@/components/common/Footer";
 
 const MainLayout = () => {
   console.log("MainLayout Rendered");
@@ -10,7 +11,7 @@ const MainLayout = () => {
       <main>
         <Outlet />
       </main>
-      <footer>Footer</footer>
+      <Footer />
     </>
   );
 };
