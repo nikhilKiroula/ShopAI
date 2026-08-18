@@ -6,11 +6,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-import {
-    generateAccessToken,
-    generateRefreshToken,
-    generateAccessAndRefreshToken
-} from "../utils/generateTokens.js";
+import { generateAccessAndRefreshToken } from "../utils/generateTokens.js";
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -35,7 +31,7 @@ const registerUser = asyncHandler(async (req, res) => {
     });
 
     const createdUser = await User.findById(user._id).select(
-        "-password"
+        "-password -refreshToken"
     );
 
     return res.status(201).json(
@@ -76,8 +72,8 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // 4. Generate tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    const { accessToken, refreshToken } =
+        await generateAccessAndRefreshToken(user._id);
 
     // 5. Store refresh token
     user.refreshToken = refreshToken;
@@ -89,17 +85,27 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 
     // 7. Send response
-    return res.status(200).json(
-        new ApiResponse(
-            200,
-            {
-                user: loggedInUser,
-                accessToken,
-                refreshToken,
-            },
-            "User logged in successfully"
-        )
-    );
+
+    const options = {
+        httpOnly: true,
+        secure: false,
+    };
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    user: loggedInUser,
+                    accessToken,
+                    refreshToken,
+                },
+                "User logged in successfully"
+            )
+        );
 });
 
 
@@ -206,4 +212,10 @@ const getProfile = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser, refreshAccessToken, logoutUser, getProfile };
+export {
+    registerUser,
+    loginUser,
+    refreshAccessToken,
+    logoutUser,
+    getProfile
+};
