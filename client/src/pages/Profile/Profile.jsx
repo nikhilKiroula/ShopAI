@@ -1,7 +1,15 @@
 import { useAuth } from "@/context";
+import { useNavigate } from "react-router-dom";
+import ROUTES from "@/constants/routes";
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate(ROUTES.LOGIN);
+  };
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
@@ -25,6 +33,13 @@ const Profile = () => {
             <p className="text-sm text-gray-500">Role</p>
             <p className="font-medium">{user?.role}</p>
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="rounded-lg bg-red-500 px-5 py-2 text-white hover:bg-red-600"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>

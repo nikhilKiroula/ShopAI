@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
 
 import {
   AuthLayout,
@@ -12,8 +13,11 @@ import {
 
 import ROUTES from "@/constants/routes";
 import { registerSchema } from "@/validations";
+import { registerUser } from "../../services/auth.service.js";
 
 const Register = () => {
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -32,9 +36,26 @@ const Register = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log(data);
+    try {
+      const response = await registerUser({
+        name: data.fullName,
+        email: data.email,
+        password: data.password,
+      });
 
-    // Backend Integration Here
+      toast.success(
+        response.message || "Account created successfully!"
+      );
+
+      navigate(ROUTES.LOGIN);
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      toast.error(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
+    }
   };
 
   return (
