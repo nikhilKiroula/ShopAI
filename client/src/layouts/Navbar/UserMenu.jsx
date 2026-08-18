@@ -1,11 +1,15 @@
 import { User, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
+
 import ROUTES from "@/constants/routes";
+import { useAuth } from "@/context";
 
 const UserMenu = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <Link
-      to={ROUTES.LOGIN}
+      to={isAuthenticated ? ROUTES.PROFILE : ROUTES.LOGIN}
       className="
         group
         flex
@@ -21,7 +25,6 @@ const UserMenu = () => {
     >
       <div className="flex items-center gap-1">
         <User className="h-5 w-5 md:h-6 md:w-6" />
-
         <ChevronDown className="hidden h-4 w-4 lg:block" />
       </div>
 

@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context";
 import toast from "react-hot-toast";
 
@@ -14,14 +13,14 @@ import {
 } from "@/components/auth";
 
 import ROUTES from "@/constants/routes";
-
 import { loginSchema } from "@/validations";
+import { loginUser } from "../../services/auth.service.js";
 
 const Login = () => {
   const navigate = useNavigate();
 
   const { login } = useAuth();
-  
+
   const {
     register,
     handleSubmit,
@@ -35,13 +34,29 @@ const Login = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log(data);
+    try {
+      const response = await loginUser(data);
 
-    // Backend Integration Here
+      // Save user in AuthContext
+      login(response.data.user);
+
+      toast.success("Login successful!");
+
+      navigate(ROUTES.HOME);
+    } catch (error) {
+      console.error("Login error:", error);
+
+      toast.error(
+        error.response?.data?.message || "Login failed. Please try again."
+      );
+    }
   };
 
   return (
-    <AuthLayout title="Welcome Back 👋" subtitle="Login to continue shopping.">
+    <AuthLayout
+      title="Welcome Back 👋"
+      subtitle="Login to continue shopping."
+    >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <AuthInput
           label="Email Address"
