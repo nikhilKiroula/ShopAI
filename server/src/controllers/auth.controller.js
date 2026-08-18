@@ -1,7 +1,7 @@
 import bcrypt, { hash } from "bcrypt";
 import jwt from "jsonwebtoken";
 
-import User from "../models/user.model.js";
+import { User } from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -105,105 +105,105 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken;
+    const incomingRefreshToken =
+        req.cookies.refreshToken || req.body.refreshToken;
 
-  if (!incomingRefreshToken) {
-    throw new ApiError(401, "Unauthorized request");
-  }
-
-  try {
-    const decodedToken = jwt.verify(
-      incomingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET
-    );
-
-    const user = await User.findById(decodedToken?.userId);
-
-    if (!user) {
-      throw new ApiError(401, "Invalid refresh token");
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "Unauthorized request");
     }
 
-    if (incomingRefreshToken !== user.refreshToken) {
-      throw new ApiError(
-        401,
-        "Refresh token is expired or used"
-      );
-    }
+    try {
+        const decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
 
-    const {
-      accessToken,
-      refreshToken: newRefreshToken,
-    } = await generateAccessAndRefreshToken(user._id);
+        const user = await User.findById(decodedToken?.userId);
 
-    const options = {
-      httpOnly: true,
-      secure: false, // localhost ke liye false, production me true
-    };
+        if (!user) {
+            throw new ApiError(401, "Invalid refresh token");
+        }
 
-    return res
-      .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
-      .json(
-        new ApiResponse(
-          200,
-          {
+        if (incomingRefreshToken !== user.refreshToken) {
+            throw new ApiError(
+                401,
+                "Refresh token is expired or used"
+            );
+        }
+
+        const {
             accessToken,
             refreshToken: newRefreshToken,
-          },
-          "Access token refreshed successfully"
-        )
-      );
-  } catch (error) {
-    throw new ApiError(
-      401,
-      error?.message || "Invalid refresh token"
-    );
-  }
+        } = await generateAccessAndRefreshToken(user._id);
+
+        const options = {
+            httpOnly: true,
+            secure: false, // localhost ke liye false, production me true
+        };
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new ApiResponse(
+                    200,
+                    {
+                        accessToken,
+                        refreshToken: newRefreshToken,
+                    },
+                    "Access token refreshed successfully"
+                )
+            );
+    } catch (error) {
+        throw new ApiError(
+            401,
+            error?.message || "Invalid refresh token"
+        );
+    }
 });
 
 
 const logoutUser = asyncHandler(async (req, res) => {
-  await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      $unset: {
-        refreshToken: 1,
-      },
-    },
-    {
-      new: true,
-    }
-  );
-
-  const options = {
-    httpOnly: true,
-    secure: false, // production me true
-  };
-
-  return res
-    .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
-    .json(
-      new ApiResponse(
-        200,
-        null,
-        "User logged out successfully"
-      )
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset: {
+                refreshToken: 1,
+            },
+        },
+        {
+            new: true,
+        }
     );
+
+    const options = {
+        httpOnly: true,
+        secure: false, // production me true
+    };
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(
+            new ApiResponse(
+                200,
+                null,
+                "User logged out successfully"
+            )
+        );
 });
 
 
 const getProfile = asyncHandler(async (req, res) => {
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      req.user,
-      "User profile fetched successfully"
-    )
-  );
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            req.user,
+            "User profile fetched successfully"
+        )
+    );
 });
 
-export { registerUser, loginUser, getProfile };
+export { registerUser, loginUser, refreshAccessToken, logoutUser, getProfile };
