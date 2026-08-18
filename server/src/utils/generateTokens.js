@@ -1,31 +1,57 @@
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
+import ApiError from "./ApiError.js";
 
-const generateAccessToken = (user)=>{
-    return jwt.sign(
-        {
-            userId:user._id,
-            role:user.role,
-        },
+const generateAccessToken = (user) => {
+  return jwt.sign(
+    {
+      userId: user._id,
+      role: user.role,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: "15m",
+    }
+  );
+};
 
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-            expiresIn:"15m"
-        }
-    )
-}
+const generateRefreshToken = (user) => {
+  return jwt.sign(
+    {
+      userId: user._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+};
 
+const generateAccessAndRefreshToken = async (userId) => {
+  const user = await User.findById(userId);
 
-const generateRefreshToken = (user)=>{
-    return jwt.sign(
-        {
-            userId:user._id,
-        },
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
 
-        process.env.REFRESH_TOKEN_SECRET,
-        {
-            expiresIn:"10d"
-        }
-    )
-}
+  const accessToken = generateAccessToken(user);
 
-export { generateAccessToken, generateRefreshToken };
+  const refreshToken = generateRefreshToken(user);
+
+  user.refreshToken = refreshToken;
+
+  await user.save({
+    validateBeforeSave: false,
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
+export {
+  generateAccessToken,
+  generateRefreshToken,
+  generateAccessAndRefreshToken,
+};
