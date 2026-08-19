@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 import { User } from "../models/user.model.js";
-import {ApiError} from "../utils/ApiError.js";
+import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const verifyJWT = asyncHandler(async (req, res, next) => {
@@ -38,4 +38,17 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
   }
 });
 
-export { verifyJWT };
+
+const verifyAdmin = asyncHandler(async (req, res, next) => {
+  if (req.user?.role !== "admin") {
+    throw new ApiError(403, "Access denied. Admin only.");
+  }
+
+  next();
+});
+
+
+export {
+  verifyJWT,
+  verifyAdmin,
+};

@@ -5,6 +5,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 const createProduct = asyncHandler(async (req, res) => {
 
+    console.log("body",req.body);
+    
     const {
         name,
         description,

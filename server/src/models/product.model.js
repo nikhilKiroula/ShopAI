@@ -46,10 +46,18 @@ const productSchema = new Schema(
         },
 
         ratings: {
-            type: Number,
-            max: 5,
-            min: 0,
-            default: 0,
+            average: {
+                type: Number,
+                max: 5,
+                min: 0,
+                default: 0,
+            },
+
+            count:{
+                type:Number,
+                default:0,
+                min:0,
+            }
         },
 
         isActive: {
