@@ -19,14 +19,16 @@ const uploadOnCloudinary = async (localFilePath, folder = "shopai") => {
 
         return response;
     } catch (error) {
+
+        console.log(
+            "Cloudinary upload error:",
+            error
+        );
         if (localFilePath && fs.existsSync(localFilePath)) {
             fs.unlinkSync(localFilePath);
         }
 
-        console.log(
-            "Cloudinary upload error:",
-            error.message
-        );
+        
 
         return null;
     }

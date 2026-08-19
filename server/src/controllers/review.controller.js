@@ -8,9 +8,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 // Create Review
 const createReview = asyncHandler(async (req, res) => {
     const { productId } = req.params;
-    const { rating, comment } = req.body;
+    const { ratings, comment } = req.body;
 
-    if (rating === undefined || !comment) {
+    if (ratings === undefined || !comment) {
         throw new ApiError(
             400,
             "Rating and comment are required"
@@ -38,7 +38,7 @@ const createReview = asyncHandler(async (req, res) => {
     const review = await Review.create({
         product: productId,
         user: req.user._id,
-        rating,
+        ratings,
         comment,
     });
 
@@ -47,15 +47,15 @@ const createReview = asyncHandler(async (req, res) => {
     });
 
     const totalRating = reviews.reduce(
-        (sum, review) => sum + review.rating,
+        (sum, review) => sum + review.ratings,
         0
     );
 
-    product.rating.average = Number(
+    product.ratings.average = Number(
         (totalRating / reviews.length).toFixed(1)
     );
 
-    product.rating.count = reviews.length;
+    product.ratings.count = reviews.length;
 
     await product.save();
 
@@ -102,9 +102,9 @@ const getProductReviews = asyncHandler(async (req, res) => {
 // Update Review
 const updateReview = asyncHandler(async (req, res) => {
     const { reviewId } = req.params;
-    const { rating, comment } = req.body;
+    const { ratings, comment } = req.body;
 
-    if (rating === undefined || !comment) {
+    if (ratings === undefined || !comment) {
         throw new ApiError(
             400,
             "Rating and comment are required"
@@ -124,7 +124,7 @@ const updateReview = asyncHandler(async (req, res) => {
         );
     }
 
-    review.rating = rating;
+    review.ratings = ratings;
     review.comment = comment;
 
     await review.save();
@@ -134,18 +134,18 @@ const updateReview = asyncHandler(async (req, res) => {
     });
 
     const totalRating = reviews.reduce(
-        (sum, review) => sum + review.rating,
+        (sum, review) => sum + review.ratings,
         0
     );
 
     const product = await Product.findById(review.product);
 
     if (product) {
-        product.rating.average = Number(
+        product.ratings.average = Number(
             (totalRating / reviews.length).toFixed(1)
         );
 
-        product.rating.count = reviews.length;
+        product.ratings.count = reviews.length;
 
         await product.save();
     }
@@ -191,19 +191,19 @@ const deleteReview = asyncHandler(async (req, res) => {
 
     if (product) {
         if (reviews.length === 0) {
-            product.rating.average = 0;
-            product.rating.count = 0;
+            product.ratings.average = 0;
+            product.ratings.count = 0;
         } else {
             const totalRating = reviews.reduce(
-                (sum, review) => sum + review.rating,
+                (sum, review) => sum + review.ratings,
                 0
             );
 
-            product.rating.average = Number(
+            product.ratings.average = Number(
                 (totalRating / reviews.length).toFixed(1)
             );
 
-            product.rating.count = reviews.length;
+            product.ratings.count = reviews.length;
         }
 
         await product.save();

@@ -14,7 +14,7 @@ const router = Router();
 
 router.post("/",verifyJWT,verifyAdmin,upload.array("images", 5),createProduct);router.get("/", getAllProducts);
 router.get("/:productId", getProductById);
-router.patch("/:productId", verifyJWT, verifyAdmin, updateProduct);
+router.patch("/:productId", verifyJWT, verifyAdmin,  upload.array("images", 5),updateProduct);
 router.delete("/:productId", verifyJWT, verifyAdmin, deleteProduct);
 
 export default router; 

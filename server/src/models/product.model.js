@@ -1,4 +1,3 @@
-import { url } from "inspector";
 import mongoose, { Schema } from "mongoose";
 
 const productSchema = new Schema(

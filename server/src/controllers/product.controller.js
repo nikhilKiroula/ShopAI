@@ -2,10 +2,9 @@ import { Product } from "../models/product.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import {
-  uploadOnCloudinary,
-  deleteFromCloudinary,
+    uploadOnCloudinary,
+    deleteFromCloudinary,
 } from "../utils/cloudinary.js";
 
 const createProduct = asyncHandler(async (req, res) => {
@@ -100,101 +99,102 @@ const getProductById = asyncHandler(async (req, res) => {
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
-  const { productId } = req.params;
+    const { productId } = req.params;
+console.log("body",req.body);
 
-  const {
-    name,
-    description,
-    price,
-    category,
-    brand,
-    stock,
-    isActive,
-  } = req.body;
+    const {
+        name,
+        description,
+        price,
+        category,
+        brand,
+        stock,
+        isActive,
+    } = req.body;
 
-  const product = await Product.findById(productId);
+    const product = await Product.findById(productId);
 
-  if (!product) {
-    throw new ApiError(404, "Product not found");
-  }
-
-  // Update normal product fields
-  if (name !== undefined) product.name = name;
-  if (description !== undefined) product.description = description;
-  if (price !== undefined) product.price = price;
-  if (category !== undefined) product.category = category;
-  if (brand !== undefined) product.brand = brand;
-  if (stock !== undefined) product.stock = stock;
-  if (isActive !== undefined) product.isActive = isActive;
-
-  // Update images only when new images are provided
-  if (req.files && req.files.length > 0) {
-    // Delete old images from Cloudinary
-    for (const image of product.images) {
-      await deleteFromCloudinary(image.publicId);
+    if (!product) {
+        throw new ApiError(404, "Product not found");
     }
 
-    const uploadedImages = [];
+    // Update normal product fields
+    if (name !== undefined) product.name = name;
+    if (description !== undefined) product.description = description;
+    if (price !== undefined) product.price = price;
+    if (category !== undefined) product.category = category;
+    if (brand !== undefined) product.brand = brand;
+    if (stock !== undefined) product.stock = stock;
+    if (isActive !== undefined) product.isActive = isActive;
 
-    for (const file of req.files) {
-      const uploadedImage = await uploadOnCloudinary(
-        file.path,
-        "shopai/products"
-      );
+    // Update images only when new images are provided
+    if (req.files && req.files.length > 0) {
+        // Delete old images from Cloudinary
+        for (const image of product.images) {
+            await deleteFromCloudinary(image.publicId);
+        }
 
-      if (!uploadedImage) {
-        throw new ApiError(
-          500,
-          "Failed to upload product image"
+        const uploadedImages = [];
+
+        for (const file of req.files) {
+            const uploadedImage = await uploadOnCloudinary(
+                file.path,
+                "shopai/products"
+            );
+
+            if (!uploadedImage) {
+                throw new ApiError(
+                    500,
+                    "Failed to upload product image"
+                );
+            }
+
+            uploadedImages.push({
+                url: uploadedImage.secure_url,
+                publicId: uploadedImage.public_id,
+            });
+        }
+
+        product.images = uploadedImages;
+    }
+
+    const updatedProduct = await product.save();
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                updatedProduct,
+                "Product updated successfully"
+            )
         );
-      }
-
-      uploadedImages.push({
-        url: uploadedImage.secure_url,
-        publicId: uploadedImage.public_id,
-      });
-    }
-
-    product.images = uploadedImages;
-  }
-
-  const updatedProduct = await product.save();
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        updatedProduct,
-        "Product updated successfully"
-      )
-    );
 });
 const deleteProduct = asyncHandler(async (req, res) => {
-  const { productId } = req.params;
+    const { productId } = req.params;
 
-  const product = await Product.findById(productId);
+    const product = await Product.findById(productId);
 
-  if (!product) {
-    throw new ApiError(404, "Product not found");
-  }
+    if (!product) {
+        throw new ApiError(404, "Product not found");
+    }
 
-  // Delete images from Cloudinary
-  for (const image of product.images) {
-    await deleteFromCloudinary(image.publicId);
-  }
+    // Delete images from Cloudinary
+    for (const image of product.images) {
+        await deleteFromCloudinary(image.publicId);
+    }
 
-  await Product.findByIdAndDelete(productId);
+    await Product.findByIdAndDelete(productId);
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        null,
-        "Product deleted successfully"
-      )
-    );
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                null,
+                "Product deleted successfully"
+            )
+        );
 });
 
 
