@@ -1,3 +1,4 @@
+import { url } from "inspector";
 import mongoose, { Schema } from "mongoose";
 
 const productSchema = new Schema(
@@ -34,7 +35,15 @@ const productSchema = new Schema(
 
         images: [
             {
-                type: String,
+                url: {
+                    type: String,
+                    required: true,
+                },
+
+                publicId:{
+                    type: String,
+                    required: true,
+                }
             },
         ],
 
