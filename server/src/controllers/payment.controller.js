@@ -107,6 +107,107 @@ const createPaymentOrder = asyncHandler(async (req, res) => {
         );
 });
 
+const verifyPayment = asyncHandler(async (req, res) => {
+    const {
+        razorpayOrderId,
+        razorpayPaymentId,
+        razorpaySignature,
+    } = req.body;
+
+    if (
+        !razorpayOrderId ||
+        !razorpayPaymentId ||
+        !razorpaySignature
+    ) {
+        throw new ApiError(
+            400,
+            "Payment verification details are required"
+        );
+    }
+
+    const payment = await Payment.findOne({
+        razorpayOrderId,
+        user: req.user._id,
+    });
+
+    if (!payment) {
+        throw new ApiError(
+            404,
+            "Payment record not found"
+        );
+    }
+
+    if (payment.status === "Paid") {
+        throw new ApiError(
+            400,
+            "Payment is already verified"
+        );
+    }
+
+    const generatedSignature = crypto
+        .createHmac(
+            "sha256",
+            process.env.RAZORPAY_KEY_SECRET
+        )
+        .update(
+            `${razorpayOrderId}|${razorpayPaymentId}`
+        )
+        .digest("hex");
+
+    if (
+        generatedSignature !== razorpaySignature
+    ) {
+        payment.status = "Failed";
+        await payment.save();
+
+        throw new ApiError(
+            400,
+            "Invalid payment signature"
+        );
+    }
+
+    payment.razorpayPaymentId =
+        razorpayPaymentId;
+
+    payment.razorpaySignature =
+        razorpaySignature;
+
+    payment.status = "Paid";
+
+    await payment.save();
+
+    const order = await Order.findOne({
+        _id: payment.order,
+        user: req.user._id,
+    });
+
+    if (!order) {
+        throw new ApiError(
+            404,
+            "Order not found"
+        );
+    }
+
+    order.paymentStatus = "Paid";
+    order.orderStatus = "Confirmed";
+
+    await order.save();
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    payment,
+                    order,
+                },
+                "Payment verified successfully"
+            )
+        );
+});
+
 export {
     createPaymentOrder,
+    verifyPayment,
 };
