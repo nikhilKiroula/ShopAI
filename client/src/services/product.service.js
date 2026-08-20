@@ -25,37 +25,31 @@ export const getProducts = async () => {
 
 export const getProductById = async (id) => {
   try {
-    const response = await fetch(
-      `https://fakestoreapi.com/products/${id}`
-    );
+    const response = await api.get(`/products/${id}`);
 
-    const product = await response.json();
+    const product = response.data.data;
 
     return {
-      id: product.id,
-
-      title: product.title,
-
-      image: product.image,
-
+      id: product._id,
+      title: product.name,
+      image: product.images?.[0]?.url || "",
       price: product.price,
-
       discount: 20,
-
-      rating: product.rating.rate,
-
-      ratingCount: product.rating.count,
-
+      rating: product.ratings?.average || 0,
+      ratingCount: product.ratings?.count || 0,
       description: product.description,
-
       category: product.category,
+      stock: product.stock,
     };
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Error fetching product:",
+      error.response?.data || error.message,
+    );
+
     return null;
   }
 };
-
 // Get All Categories
 
 export const getCategories = async () => {

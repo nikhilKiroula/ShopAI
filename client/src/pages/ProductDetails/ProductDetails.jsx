@@ -143,9 +143,9 @@ const ProductDetails = () => {
           <div className="mt-6 flex items-center gap-3">
             <span className="text-4xl font-bold">
               ₹
-              {Math.round(
-                product.price * 85
-              ).toLocaleString("en-IN")}
+              {
+                product.price 
+              .toLocaleString("en-IN")}
             </span>
 
             <span
@@ -157,7 +157,7 @@ const ProductDetails = () => {
             >
               ₹
               {Math.round(
-                originalPrice * 85
+                originalPrice
               ).toLocaleString("en-IN")}
             </span>
 

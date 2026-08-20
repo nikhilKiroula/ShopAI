@@ -4,8 +4,13 @@ import { useCart } from "@/context";
 import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
-  const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } =
-    useCart();
+  const {
+    cartItems,
+    removeFromCart,
+    increaseQuantity,
+    decreaseQuantity,
+    clearCartItems,
+  } = useCart();
 
   const navigate = useNavigate();
 
@@ -51,7 +56,7 @@ const Cart = () => {
                 <h2 className="font-semibold">{item.title}</h2>
 
                 <p className="mt-2 font-bold text-[#0B57D0]">
-                  ₹{Math.round(item.price).toLocaleString("en-IN")}
+                  ₹{item.price.toLocaleString("en-IN")}{" "}
                 </p>
               </div>
 
@@ -110,6 +115,13 @@ const Cart = () => {
             "
           >
             Proceed to Checkout
+          </button>
+
+          <button
+            onClick={clearCartItems}
+            className="text-red-500 hover:text-red-700"
+          >
+            Clear Cart
           </button>
         </div>
       </div>

@@ -182,7 +182,7 @@ const ProductCard = ({ product }) => {
               text-gray-900
             "
           >
-            ₹{Math.round(price * 85).toLocaleString("en-IN")}
+            ₹{price.toLocaleString("en-IN")}
           </span>
 
           <span
@@ -192,7 +192,7 @@ const ProductCard = ({ product }) => {
               line-through
             "
           >
-            ₹{Math.round(originalPrice * 85).toLocaleString("en-IN")}
+            ₹{Math.round(originalPrice + 85).toLocaleString("en-IN")}
           </span>
         </div>
 

@@ -1,7 +1,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
 import api from "@/services/api.service";
-import { updateCartItem, removeCartItem } from "@/services/cart.service";
+import {
+  updateCartItem,
+  removeCartItem,
+  clearCart,
+} from "@/services/cart.service";
 
 const CartContext = createContext();
 
@@ -105,6 +109,20 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // Remove all products from the backend cart
+  const clearCartItems = async () => {
+    try {
+      const response = await clearCart();
+
+      if (response?.success) {
+        // Refresh cart data from the backend
+        await fetchCart();
+      }
+    } catch (error) {
+      console.log(error.response?.data || error);
+    }
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -113,6 +131,7 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         increaseQuantity,
         decreaseQuantity,
+        clearCartItems,
       }}
     >
       {children}

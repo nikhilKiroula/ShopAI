@@ -23,3 +23,15 @@ export const removeCartItem = async (productId) => {
         return null;
     }
 };
+
+// Clear all items from the cart
+export const clearCart = async () => {
+    try {
+        const response = await api.delete("/cart");
+
+        return response.data;
+    } catch (error) {
+        console.error("Clear cart error:", error);
+        return null;
+    }
+};
