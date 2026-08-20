@@ -1,7 +1,7 @@
 import { Trash2, Minus, Plus } from "lucide-react";
 
 import { useCart } from "@/context";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } =
@@ -51,7 +51,7 @@ const Cart = () => {
                 <h2 className="font-semibold">{item.title}</h2>
 
                 <p className="mt-2 font-bold text-[#0B57D0]">
-                  ₹{Math.round(item.price * 85).toLocaleString("en-IN")}
+                  ₹{Math.round(item.price).toLocaleString("en-IN")}
                 </p>
               </div>
 
@@ -67,7 +67,7 @@ const Cart = () => {
 
                 <button
                   className="p-3 hover:bg-gray-100"
-                  onClick={() => increaseQuantity(item.id)}
+                  onClick={() => increaseQuantity(item)}
                 >
                   <Plus size={18} />
                 </button>
@@ -75,7 +75,7 @@ const Cart = () => {
 
               <button
                 className="text-red-500 cursor-pointer"
-                onClick={() => removeFromCart(item.id)}
+                onClick={() => removeFromCart(item)}
               >
                 <Trash2 size={22} />
               </button>
@@ -92,7 +92,7 @@ const Cart = () => {
             <span>Total</span>
 
             <span className="font-bold text-[#0B57D0]">
-              ₹{Math.round(totalPrice * 85).toLocaleString("en-IN")}
+              ₹{Math.round(totalPrice).toLocaleString("en-IN")}
             </span>
           </div>
 

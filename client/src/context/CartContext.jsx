@@ -1,36 +1,53 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import api from "@/services/api.service";
+import { updateCartItem } from "@/services/cart.service";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
-  // Add Product
-  const addToCart = (product, quantity = 1) => {
-    setCartItems((prev) => {
-      const existingProduct = prev.find((item) => item.id === product.id);
+  const fetchCart = async () => {
+    try {
+      const response = await api.get("/cart");
 
-      if (existingProduct) {
-        return prev.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + quantity,
-              }
-            : item,
-        );
-      }
+      console.log("Cart from backend:", response.data);
 
-      return [
-        ...prev,
-        {
-          ...product,
-          quantity,
-        },
-      ];
-    });
+      const items = response.data.data.items.map((item) => ({
+        id: item.product._id,
+        cartItemId: item._id,
+        title: item.product.name,
+        price: item.product.price,
+        image: item.product.images[0]?.url,
+        quantity: item.quantity,
+      }));
+
+      setCartItems(items);
+    } catch (error) {
+      console.log(error.response?.data || error);
+    }
   };
 
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  // Add Product
+  const addToCart = async (product, quantity = 1) => {
+    console.log("Product:", product);
+
+    try {
+      const response = await api.post(`/cart/${product.id}`, {
+        quantity,
+      });
+
+      console.log("Product added to backend cart:", response.data);
+
+      await fetchCart();
+    } catch (error) {
+      console.log(error.response?.data || error);
+    }
+  };
   // Remove Product
 
   const removeFromCart = (id) => {
@@ -39,32 +56,28 @@ export const CartProvider = ({ children }) => {
 
   // Increase Quantity
 
-  const increaseQuantity = (id) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: item.quantity + 1,
-            }
-          : item,
-      ),
-    );
+  const increaseQuantity = async (item) => {
+    const newQuantity = item.quantity + 1;
+
+    const response = await updateCartItem(item.product._id, newQuantity);
+
+    if (response?.success) {
+      setCartItems(response.data.items);
+    }
   };
 
   // Decrease Quantity
 
-  const decreaseQuantity = (id) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: Math.max(1, item.quantity - 1),
-            }
-          : item,
-      ),
-    );
+  const decreaseQuantity = async (item) => {
+    if (item.quantity <= 1) return;
+
+    const newQuantity = item.quantity - 1;
+
+    const response = await updateCartItem(item.product._id, newQuantity);
+
+    if (response?.success) {
+      setCartItems(response.data.items);
+    }
   };
 
   return (

@@ -12,6 +12,7 @@ import Profile from "../pages/Profile/Profile";
 import Orders from "../pages/Orders/Orders";
 import About from "../pages/About/About";
 import Contact from "../pages/Contact/Contact";
+import Checkout from "../pages/Checkout/Checkout";
 
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
@@ -50,6 +51,15 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Cart />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "checkout",
+        element: (
+          <ProtectedRoute>
+            <Checkout />
           </ProtectedRoute>
         ),
       },
