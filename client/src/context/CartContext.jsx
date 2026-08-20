@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
 import api from "@/services/api.service";
-import { updateCartItem } from "@/services/cart.service";
+import { updateCartItem, removeCartItem } from "@/services/cart.service";
 
 const CartContext = createContext();
 
@@ -56,10 +56,18 @@ export const CartProvider = ({ children }) => {
   };
 
   // Remove a product from the cart
-  const removeFromCart = (id) => {
-    setCartItems((prev) =>
-      prev.filter((item) => item.id !== id)
-    );
+  // Remove a product from the backend cart
+  const removeFromCart = async (id) => {
+    try {
+      const response = await removeCartItem(id);
+
+      if (response?.success) {
+        // Refresh cart data from the backend
+        await fetchCart();
+      }
+    } catch (error) {
+      console.log(error.response?.data || error);
+    }
   };
 
   // Increase the quantity of a cart item
@@ -67,10 +75,7 @@ export const CartProvider = ({ children }) => {
     const newQuantity = item.quantity + 1;
 
     try {
-      const response = await updateCartItem(
-        item.id,
-        newQuantity
-      );
+      const response = await updateCartItem(item.id, newQuantity);
 
       if (response?.success) {
         // Refresh cart data from the backend
@@ -89,10 +94,7 @@ export const CartProvider = ({ children }) => {
     const newQuantity = item.quantity - 1;
 
     try {
-      const response = await updateCartItem(
-        item.id,
-        newQuantity
-      );
+      const response = await updateCartItem(item.id, newQuantity);
 
       if (response?.success) {
         // Refresh cart data from the backend

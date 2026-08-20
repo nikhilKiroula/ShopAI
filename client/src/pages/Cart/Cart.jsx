@@ -58,7 +58,7 @@ const Cart = () => {
               <div className="flex items-center rounded-lg border">
                 <button
                   className="p-3 hover:bg-gray-100"
-                  onClick={() => decreaseQuantity(item.id)}
+                  onClick={() => decreaseQuantity(item)}
                 >
                   <Minus size={18} />
                 </button>
@@ -75,7 +75,7 @@ const Cart = () => {
 
               <button
                 className="text-red-500 cursor-pointer"
-                onClick={() => removeFromCart(item)}
+                onClick={() => removeFromCart(item.id)}
               >
                 <Trash2 size={22} />
               </button>
