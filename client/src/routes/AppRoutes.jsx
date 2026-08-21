@@ -13,6 +13,9 @@ import Orders from "../pages/Orders/Orders";
 import About from "../pages/About/About";
 import Contact from "../pages/Contact/Contact";
 import Checkout from "../pages/Checkout/Checkout";
+import AddProduct from "../pages/Admin/Products/AddProduct";
+import AdminProducts from "../pages/Admin/Products/Products";
+import EditProduct from "../pages/Admin/Products/EditProduct";
 
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
@@ -60,6 +63,33 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Checkout />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "admin/products/add",
+        element: (
+          <ProtectedRoute>
+            <AddProduct />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "admin/products",
+        element: (
+          <ProtectedRoute>
+            <AdminProducts />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "admin/products/edit/:productId",
+        element: (
+          <ProtectedRoute>
+            <EditProduct />
           </ProtectedRoute>
         ),
       },
