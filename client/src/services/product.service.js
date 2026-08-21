@@ -1,8 +1,22 @@
 import api from "@/services/api.service";
 
-export const getProducts = async () => {
+export const getProducts = async (category, search) => {
   try {
-    const response = await api.get("/products");
+    const params = new URLSearchParams();
+
+    if (category) {
+      params.append("category", category);
+    }
+
+    if (search) {
+      params.append("search", search);
+    }
+
+    const query = params.toString();
+
+    const response = await api.get(
+      query ? `/products?${query}` : "/products",
+    );
 
     const products = response.data.data;
 
@@ -18,7 +32,11 @@ export const getProducts = async () => {
       description: product.description,
     }));
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Error fetching products:",
+      error.response?.data || error.message,
+    );
+
     return [];
   }
 };

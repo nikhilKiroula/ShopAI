@@ -8,6 +8,7 @@ import {
 } from "../utils/cloudinary.js";
 
 const createProduct = asyncHandler(async (req, res) => {
+console.log("CREATE PRODUCT API HIT");
 
     const {
         name,
@@ -66,16 +67,67 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const getAllProducts = asyncHandler(async (req, res) => {
+    const { category, search, sort  } = req.query;
 
-    const products = await Product.find({ isActive: true });
+    const filter = {
+        isActive: true,
+    };
+
+    // Filter products by category
+    if (category) {
+        filter.category = category;
+    }
+
+    // Search products by name or description
+    if (search) {
+        filter.$or = [
+            {
+                name: {
+                    $regex: search,
+                    $options: "i",
+                },
+            },
+            {
+                description: {
+                    $regex: search,
+                    $options: "i",
+                },
+            },
+        ];
+    }
+
+    // Create product query
+    let query = Product.find(filter);
+
+    // Sort products
+    switch (sort) {
+        case "price_asc":
+            query = query.sort({ price: 1 });
+            break;
+
+        case "price_desc":
+            query = query.sort({ price: -1 });
+            break;
+
+        case "rating":
+            query = query.sort({ "ratings.average": -1 });
+            break;
+
+        default:
+            break;
+    }
+
+    const products = await query;
 
     return res
         .status(200)
-        .json(new ApiResponse(
-            200,
-            products,
-            "All Products Fetched Successfully"
-        ));
+        .json(
+            new ApiResponse(
+                200,
+                products,
+                "Products fetched successfully"
+            )
+        );
 });
 
 const getProductById = asyncHandler(async (req, res) => {
@@ -100,7 +152,7 @@ const getProductById = asyncHandler(async (req, res) => {
 
 const updateProduct = asyncHandler(async (req, res) => {
     const { productId } = req.params;
-console.log("body",req.body);
+    console.log("body", req.body);
 
     const {
         name,

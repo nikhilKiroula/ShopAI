@@ -30,34 +30,25 @@ const Products = () => {
   const category = searchParams.get("category");
   const search = searchParams.get("search") || "";
 
+  // Fetch products from the backend
   useEffect(() => {
     const fetchProducts = async () => {
-      const data = await getProducts();
+      setLoading(true);
+
+      const data = await getProducts(category, search);
 
       setProducts(data);
-
       setLoading(false);
     };
 
     fetchProducts();
-  }, []);
+  }, [category, search]);
 
-  const filteredProducts = useMemo(() => {
-    let filtered = products;
+  // Category & Search filtering is handled by the backend.
+  const filteredProducts = products;
 
-    if (category) {
-      filtered = filtered.filter((product) => product.category === category);
-    }
-
-    if (search) {
-      filtered = filtered.filter((product) =>
-        product.title.toLowerCase().includes(search.toLowerCase()),
-      );
-    }
-
-    return filtered;
-  }, [products, category, search]);
-
+  
+  // Sort products on the frontend for now.
   const sortedProducts = useMemo(() => {
     const sorted = [...filteredProducts];
 
@@ -94,7 +85,6 @@ const Products = () => {
           flex
           flex-col
           gap-4
-
           sm:flex-row
           sm:items-center
           sm:justify-between
@@ -115,38 +105,36 @@ const Products = () => {
           </p>
         </div>
 
+        {/* Sorting */}
+
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           className="
-  cursor-pointer
-  rounded-lg
-  border
-  border-gray-300
-  bg-white
-  px-4
-  py-2.5
-  pr-10
-  text-sm
-  font-medium
-  text-gray-700
-  shadow-sm
-  outline-none
-  transition-all
-  duration-200
-  hover:border-[#0B57D0]
-  hover:shadow-md
-  focus:border-[#0B57D0]
-  focus:ring-2
-  focus:ring-[#0B57D0]/20
-"
+            cursor-pointer
+            rounded-lg
+            border
+            border-gray-300
+            bg-white
+            px-4
+            py-2.5
+            pr-10
+            text-sm
+            font-medium
+            text-gray-700
+            shadow-sm
+            outline-none
+            transition-all
+            duration-200
+            hover:border-[#0B57D0]
+            focus:border-[#0B57D0]
+            focus:ring
+            focus:ring-[#0B57D0]/20
+          "
         >
           <option value="featured">Featured</option>
-
           <option value="low">Price: Low to High</option>
-
           <option value="high">Price: High to Low</option>
-
           <option value="rating">Highest Rated</option>
         </select>
       </div>
