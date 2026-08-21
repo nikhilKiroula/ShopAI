@@ -259,10 +259,143 @@ const cancelOrder = asyncHandler(async (req, res) => {
         );
 });
 
+// Get all orders for admin
+const getAllOrders = asyncHandler(async (req, res) => {
+    const orders = await Order.find()
+        .populate("user", "name email")
+        .populate(
+            "items.product",
+            "name price images"
+        )
+        .sort({ createdAt: -1 });
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                orders,
+                "All orders fetched successfully"
+            )
+        );
+});
+
+// Get single order for admin
+const getAdminOrderById = asyncHandler(async (req, res) => {
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId)
+        .populate("user", "name email")
+        .populate(
+            "items.product",
+            "name price images"
+        );
+
+    if (!order) {
+        throw new ApiError(
+            404,
+            "Order not found"
+        );
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                order,
+                "Order fetched successfully"
+            )
+        );
+});
+
+
+// Update order status by admin
+const updateOrderStatus = asyncHandler(async (req, res) => {
+    const { orderId } = req.params;
+    const { orderStatus } = req.body;
+
+    const allowedStatuses = [
+        "Pending",
+        "Confirmed",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+    ];
+
+    // Validate order status
+    if (!allowedStatuses.includes(orderStatus)) {
+        throw new ApiError(
+            400,
+            "Invalid order status"
+        );
+    }
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+        throw new ApiError(
+            404,
+            "Order not found"
+        );
+    }
+
+    // Do not allow changes after delivery
+    if (order.orderStatus === "Delivered") {
+        throw new ApiError(
+            400,
+            "Delivered order cannot be updated"
+        );
+    }
+
+    // Do not allow changes after cancellation
+    if (order.orderStatus === "Cancelled") {
+        throw new ApiError(
+            400,
+            "Cancelled order cannot be updated"
+        );
+    }
+
+    // If admin cancels the order
+    if (
+        orderStatus === "Cancelled" &&
+        order.orderStatus !== "Cancelled"
+    ) {
+        // Restore product stock
+        for (const item of order.items) {
+            await Product.findByIdAndUpdate(
+                item.product,
+                {
+                    $inc: {
+                        stock: item.quantity,
+                    },
+                }
+            );
+        }
+    }
+
+    order.orderStatus = orderStatus;
+
+    await order.save();
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                order,
+                "Order status updated successfully"
+            )
+        );
+});
 
 export {
     createOrder,
     getMyOrders,
     getOrder,
     cancelOrder,
+    getAllOrders,
+    getAdminOrderById,
+    updateOrderStatus,
 };
