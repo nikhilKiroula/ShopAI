@@ -138,7 +138,7 @@ export const getProductsByCategory = async (category) => {
 // Get all products for Admin Panel
 export const getAdminProducts = async () => {
   try {
-    const response = await api.get("/products");
+    const response = await api.get("/products/admin");
 
     return response.data.data;
   } catch (error) {
@@ -149,6 +149,21 @@ export const getAdminProducts = async () => {
 
     throw error;
   }
+};
+
+export const getAdminProductById = async (id) => {
+    try {
+        const response = await api.get(`/products/admin/${id}`);
+
+        return response.data.data;
+    } catch (error) {
+        console.error(
+            "Get admin product error:",
+            error.response?.data || error
+        );
+
+        throw error;
+    }
 };
 
 // Delete a product

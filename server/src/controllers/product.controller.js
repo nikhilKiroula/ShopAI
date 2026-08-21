@@ -8,7 +8,7 @@ import {
 } from "../utils/cloudinary.js";
 
 const createProduct = asyncHandler(async (req, res) => {
-console.log("CREATE PRODUCT API HIT");
+    console.log("CREATE PRODUCT API HIT");
 
     const {
         name,
@@ -67,7 +67,7 @@ console.log("CREATE PRODUCT API HIT");
 });
 
 const getAllProducts = asyncHandler(async (req, res) => {
-    const { category, search, sort  } = req.query;
+    const { category, search, sort } = req.query;
 
     const filter = {
         isActive: true,
@@ -130,6 +130,23 @@ const getAllProducts = asyncHandler(async (req, res) => {
         );
 });
 
+
+const getAdminProducts = asyncHandler(async (req, res) => {
+    
+    const products = await Product.find();
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                products,
+                "Admin products fetched successfully"
+            )
+        );
+});
+
+
 const getProductById = asyncHandler(async (req, res) => {
 
     const { productId } = req.params;
@@ -148,6 +165,27 @@ const getProductById = asyncHandler(async (req, res) => {
             product,
             "Product fetched successfully"
         ))
+});
+
+
+const getAdminProductById = asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+
+    const product = await Product.findById(productId);
+
+    if (!product) {
+        throw new ApiError(404, "Product not found");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                product,
+                "Admin product fetched successfully"
+            )
+        );
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
@@ -253,7 +291,9 @@ const deleteProduct = asyncHandler(async (req, res) => {
 export {
     createProduct,
     getAllProducts,
+    getAdminProducts,
     getProductById,
+    getAdminProductById,
     updateProduct,
     deleteProduct,
 }

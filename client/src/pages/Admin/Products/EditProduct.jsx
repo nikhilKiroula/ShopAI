@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import api from "@/services/api.service";
-import { updateProduct } from "@/services/product.service";
+import { updateProduct, getAdminProductById } from "@/services/product.service";
 
 const EditProduct = () => {
   const { productId } = useParams();
@@ -28,9 +27,7 @@ const EditProduct = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await api.get(`/products/${productId}`);
-
-        const product = response.data.data;
+        const product =  await getAdminProductById(productId);
 
         setFormData({
           name: product.name || "",
@@ -44,10 +41,7 @@ const EditProduct = () => {
       } catch (error) {
         console.error(error);
 
-        toast.error(
-          error.response?.data?.message ||
-            "Failed to fetch product"
-        );
+        toast.error(error.response?.data?.message || "Failed to fetch product");
 
         navigate("/admin/products");
       } finally {
@@ -123,10 +117,7 @@ const EditProduct = () => {
     } catch (error) {
       console.error(error);
 
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to update product"
-      );
+      toast.error(error.response?.data?.message || "Failed to update product");
     } finally {
       setSubmitting(false);
     }
@@ -145,13 +136,9 @@ const EditProduct = () => {
       {/* Header */}
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Edit Product
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">Edit Product</h1>
 
-        <p className="mt-1 text-gray-500">
-          Update your product information
-        </p>
+        <p className="mt-1 text-gray-500">Update your product information</p>
       </div>
 
       {/* Form */}

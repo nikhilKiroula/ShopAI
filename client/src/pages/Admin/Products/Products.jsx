@@ -70,7 +70,7 @@ const Products = () => {
       {/* Products Table */}
 
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <table className="w-full min-w-[900px]">
+        <table className="w-full min-w-225">
           <thead className="border-b bg-gray-50">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-semibold">
