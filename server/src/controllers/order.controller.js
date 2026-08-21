@@ -7,11 +7,14 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+// =====================================================
+// Create New Order
+// =====================================================
 
-// Create Order
 const createOrder = asyncHandler(async (req, res) => {
     const { addressId } = req.body;
 
+    // Check whether address ID is provided
     if (!addressId) {
         throw new ApiError(
             400,
@@ -19,10 +22,15 @@ const createOrder = asyncHandler(async (req, res) => {
         );
     }
 
+    // -------------------------------------------------
+    // 1. Get user's cart
+    // -------------------------------------------------
+
     const cart = await Cart.findOne({
         user: req.user._id,
     }).populate("items.product");
 
+    // Check whether cart exists and contains products
     if (!cart || cart.items.length === 0) {
         throw new ApiError(
             400,
@@ -30,6 +38,12 @@ const createOrder = asyncHandler(async (req, res) => {
         );
     }
 
+    // -------------------------------------------------
+    // 2. Get user's selected address
+    // -------------------------------------------------
+
+    // We also check the user here so that one user
+    // cannot use another user's address.
     const address = await Address.findOne({
         _id: addressId,
         user: req.user._id,
@@ -42,13 +56,18 @@ const createOrder = asyncHandler(async (req, res) => {
         );
     }
 
-    const orderItems = [];
+    // -------------------------------------------------
+    // 3. Prepare order items and calculate subtotal
+    // -------------------------------------------------
 
+    const orderItems = [];
     let subtotal = 0;
 
     for (const item of cart.items) {
         const product = item.product;
 
+        // Product may have been deleted after
+        // being added to the cart.
         if (!product) {
             throw new ApiError(
                 404,
@@ -56,6 +75,7 @@ const createOrder = asyncHandler(async (req, res) => {
             );
         }
 
+        // Inactive products cannot be ordered
         if (!product.isActive) {
             throw new ApiError(
                 400,
@@ -63,6 +83,7 @@ const createOrder = asyncHandler(async (req, res) => {
             );
         }
 
+        // Check whether enough stock is available
         if (product.stock < item.quantity) {
             throw new ApiError(
                 400,
@@ -70,32 +91,47 @@ const createOrder = asyncHandler(async (req, res) => {
             );
         }
 
+        // Calculate total price for this cart item
         const itemTotal =
             product.price * item.quantity;
 
         subtotal += itemTotal;
 
+        // Save a snapshot of product information
+        // inside the order.
         orderItems.push({
             product: product._id,
             name: product.name,
-            image:
-                product.images?.[0]?.url || "",
+            image: product.images?.[0]?.url || "",
             price: product.price,
             quantity: item.quantity,
         });
     }
 
+    // -------------------------------------------------
+    // 4. Calculate shipping charges
+    // -------------------------------------------------
+
+    // Free shipping for orders of ₹1000 or more
     const shippingCharge =
         subtotal >= 1000 ? 0 : 50;
 
+    // Final amount customer needs to pay
     const totalAmount =
         subtotal + shippingCharge;
+
+    // -------------------------------------------------
+    // 5. Create order
+    // -------------------------------------------------
 
     const order = await Order.create({
         user: req.user._id,
 
         items: orderItems,
 
+        // Store address snapshot inside order.
+        // Even if the user changes their address later,
+        // the old order should keep the original address.
         shippingAddress: {
             fullName: address.fullName,
             phone: address.phone,
@@ -110,11 +146,17 @@ const createOrder = asyncHandler(async (req, res) => {
         shippingCharge,
         totalAmount,
 
+        // Payment will be handled separately later.
         paymentStatus: "Pending",
+
+        // New order starts with Pending status.
         orderStatus: "Pending",
     });
 
-    // Decrease stock
+    // -------------------------------------------------
+    // 6. Decrease product stock
+    // -------------------------------------------------
+
     for (const item of cart.items) {
         await Product.findByIdAndUpdate(
             item.product._id,
@@ -126,16 +168,24 @@ const createOrder = asyncHandler(async (req, res) => {
         );
     }
 
-    // Clear cart
+    // -------------------------------------------------
+    // 7. Clear user's cart
+    // -------------------------------------------------
+
     cart.items = [];
+
     await cart.save();
 
-    const populatedOrder = await Order.findById(
-        order._id
-    ).populate(
-        "items.product",
-        "name price images"
-    );
+    // -------------------------------------------------
+    // 8. Return created order
+    // -------------------------------------------------
+
+    const populatedOrder =
+        await Order.findById(order._id)
+            .populate(
+                "items.product",
+                "name price images"
+            );
 
     return res
         .status(201)
@@ -148,16 +198,23 @@ const createOrder = asyncHandler(async (req, res) => {
         );
 });
 
-
+// =====================================================
 // Get My Orders
+// =====================================================
+
 const getMyOrders = asyncHandler(async (req, res) => {
+    // Fetch only the orders that belong to the
+    // currently authenticated user.
     const orders = await Order.find({
         user: req.user._id,
     })
+        // Populate product details for each order item.
         .populate(
             "items.product",
             "name price images"
         )
+
+        // Show newest orders first.
         .sort({
             createdAt: -1,
         });
@@ -174,10 +231,18 @@ const getMyOrders = asyncHandler(async (req, res) => {
 });
 
 
+// =====================================================
 // Get Single Order
+// =====================================================
+
 const getOrder = asyncHandler(async (req, res) => {
     const { orderId } = req.params;
 
+    // Find the order using both order ID and user ID.
+    //
+    // This is important because a user should not be
+    // able to access another user's order by changing
+    // the order ID in the URL.
     const order = await Order.findOne({
         _id: orderId,
         user: req.user._id,
@@ -186,6 +251,8 @@ const getOrder = asyncHandler(async (req, res) => {
         "name price images"
     );
 
+    // If order doesn't exist or doesn't belong
+    // to the current user, return 404.
     if (!order) {
         throw new ApiError(
             404,
@@ -205,10 +272,15 @@ const getOrder = asyncHandler(async (req, res) => {
 });
 
 
+// =====================================================
 // Cancel Order
+// =====================================================
+
 const cancelOrder = asyncHandler(async (req, res) => {
     const { orderId } = req.params;
 
+    // Find only the order belonging to the
+    // currently authenticated user.
     const order = await Order.findOne({
         _id: orderId,
         user: req.user._id,
@@ -221,6 +293,14 @@ const cancelOrder = asyncHandler(async (req, res) => {
         );
     }
 
+    // -------------------------------------------------
+    // Check whether the order can be cancelled
+    // -------------------------------------------------
+
+    // Once the order is shipped or delivered,
+    // the customer cannot cancel it.
+    //
+    // A cancelled order also cannot be cancelled again.
     if (
         order.orderStatus === "Shipped" ||
         order.orderStatus === "Delivered" ||
@@ -232,9 +312,19 @@ const cancelOrder = asyncHandler(async (req, res) => {
         );
     }
 
+    // -------------------------------------------------
+    // Update order status
+    // -------------------------------------------------
+
     order.orderStatus = "Cancelled";
 
-    // Restore stock
+    // -------------------------------------------------
+    // Restore product stock
+    // -------------------------------------------------
+
+    // When the order was created, stock was decreased.
+    // If the customer cancels the order, we add that
+    // quantity back to the product stock.
     for (const item of order.items) {
         await Product.findByIdAndUpdate(
             item.product,
@@ -246,6 +336,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
         );
     }
 
+    // Save the updated order.
     await order.save();
 
     return res
@@ -258,6 +349,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
             )
         );
 });
+
 
 // Get all orders for admin
 const getAllOrders = asyncHandler(async (req, res) => {
@@ -310,11 +402,12 @@ const getAdminOrderById = asyncHandler(async (req, res) => {
 });
 
 
-// Update order status by admin
+// Update order status for admin
 const updateOrderStatus = asyncHandler(async (req, res) => {
     const { orderId } = req.params;
     const { orderStatus } = req.body;
 
+    // Define all valid order statuses
     const allowedStatuses = [
         "Pending",
         "Confirmed",
@@ -324,7 +417,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         "Cancelled",
     ];
 
-    // Validate order status
+    // Validate the new status
     if (!allowedStatuses.includes(orderStatus)) {
         throw new ApiError(
             400,
@@ -332,6 +425,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         );
     }
 
+    // Find the order
     const order = await Order.findById(orderId);
 
     if (!order) {
@@ -341,28 +435,45 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         );
     }
 
-    // Do not allow changes after delivery
-    if (order.orderStatus === "Delivered") {
+    const currentStatus = order.orderStatus;
+
+    // Prevent changes to completed or cancelled orders
+    if (currentStatus === "Delivered") {
         throw new ApiError(
             400,
             "Delivered order cannot be updated"
         );
     }
 
-    // Do not allow changes after cancellation
-    if (order.orderStatus === "Cancelled") {
+    if (currentStatus === "Cancelled") {
         throw new ApiError(
             400,
             "Cancelled order cannot be updated"
         );
     }
 
-    // If admin cancels the order
+    // Define valid status transitions
+    const allowedTransitions = {
+        Pending: ["Confirmed", "Cancelled"],
+        Confirmed: ["Processing", "Cancelled"],
+        Processing: ["Shipped", "Cancelled"],
+        Shipped: ["Delivered"],
+    };
+
+    // Check whether the requested transition is valid
     if (
-        orderStatus === "Cancelled" &&
-        order.orderStatus !== "Cancelled"
+        !allowedTransitions[currentStatus]?.includes(
+            orderStatus
+        )
     ) {
-        // Restore product stock
+        throw new ApiError(
+            400,
+            `Order cannot move from ${currentStatus} to ${orderStatus}`
+        );
+    }
+
+    // Restore stock when an order is cancelled
+    if (orderStatus === "Cancelled") {
         for (const item of order.items) {
             await Product.findByIdAndUpdate(
                 item.product,
@@ -375,8 +486,10 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         }
     }
 
+    // Update the order status
     order.orderStatus = orderStatus;
 
+    // Save the updated order
     await order.save();
 
     return res
@@ -390,6 +503,71 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         );
 });
 
+
+// Process a refund for a paid cancelled order
+const refundOrder = asyncHandler(async (req, res) => {
+    const { orderId } = req.params;
+
+    // Find the order
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+        throw new ApiError(
+            404,
+            "Order not found"
+        );
+    }
+
+    // Refund is only possible for cancelled orders
+    if (order.orderStatus !== "Cancelled") {
+        throw new ApiError(
+            400,
+            "Only cancelled orders can be refunded"
+        );
+    }
+
+    // Prevent refunding the same order twice
+    if (order.paymentStatus === "Refunded") {
+        throw new ApiError(
+            400,
+            "Order has already been refunded"
+        );
+    }
+
+    // There is nothing to refund if payment was never completed
+    if (order.paymentStatus !== "Paid") {
+        throw new ApiError(
+            400,
+            "Order is not eligible for refund"
+        );
+    }
+
+    /*
+     * Actual payment gateway refund will be implemented here.
+     *
+     * Example:
+     * await stripe.refunds.create({
+     *     payment_intent: order.paymentId,
+     * });
+     */
+
+    // Mark payment as refunded after successful refund
+    order.paymentStatus = "Refunded";
+
+    await order.save();
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                order,
+                "Order refunded successfully"
+            )
+        );
+});
+
+
 export {
     createOrder,
     getMyOrders,
@@ -398,4 +576,5 @@ export {
     getAllOrders,
     getAdminOrderById,
     updateOrderStatus,
+    refundOrder,
 };

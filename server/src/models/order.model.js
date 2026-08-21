@@ -1,159 +1,228 @@
 import mongoose, { Schema } from "mongoose";
 
+
+// --------------------------------------------------
+// Order Item Schema
+// Stores product information at the time of purchase
+// --------------------------------------------------
+
 const orderItemSchema = new Schema(
-  {
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-    },
+    {
+        // Reference to the original product
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+            required: true,
+        },
 
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+        // Store product name separately
+        // so old orders remain readable even if product changes
+        name: {
+            type: String,
+            required: true,
+            trim: true,
+        },
 
-    image: {
-      type: String,
-      default: "",
-    },
+        // Store the product image used in the order
+        image: {
+            type: String,
+            default: "",
+        },
 
-    price: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+        // Store the price at the time of purchase
+        // This should not change if the product price changes later
+        price: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
 
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
+        // Quantity purchased
+        quantity: {
+            type: Number,
+            required: true,
+            min: 1,
+        },
     },
-  },
-  {
-    _id: false,
-  }
+    {
+        // Order items do not need their own MongoDB _id
+        _id: false,
+    }
 );
+
+
+// --------------------------------------------------
+// Shipping Address Schema
+// Stores a snapshot of the address used for the order
+// --------------------------------------------------
 
 const shippingAddressSchema = new Schema(
-  {
-    fullName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    {
+        fullName: {
+            type: String,
+            required: true,
+            trim: true,
+        },
 
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+        phone: {
+            type: String,
+            required: true,
+            trim: true,
+        },
 
-    addressLine: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+        addressLine: {
+            type: String,
+            required: true,
+            trim: true,
+        },
 
-    city: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+        city: {
+            type: String,
+            required: true,
+            trim: true,
+        },
 
-    state: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+        state: {
+            type: String,
+            required: true,
+            trim: true,
+        },
 
-    postalCode: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+        postalCode: {
+            type: String,
+            required: true,
+            trim: true,
+        },
 
-    country: {
-      type: String,
-      required: true,
-      trim: true,
+        country: {
+            type: String,
+            required: true,
+            trim: true,
+        },
     },
-  },
-  {
-    _id: false,
-  }
+    {
+        // Shipping address does not need its own _id
+        _id: false,
+    }
 );
+
+
+// --------------------------------------------------
+// Order Schema
+// --------------------------------------------------
 
 const orderSchema = new Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    {
+        // User who placed the order
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
 
-    items: {
-      type: [orderItemSchema],
-      required: true,
-      validate: {
-        validator: (items) => items.length > 0,
-        message: "Order must contain at least one item",
-      },
-    },
+        // Products included in the order
+        items: {
+            type: [orderItemSchema],
+            required: true,
 
-    shippingAddress: {
-      type: shippingAddressSchema,
-      required: true,
-    },
+            // An order must contain at least one product
+            validate: {
+                validator: (items) => items.length > 0,
+                message: "Order must contain at least one item",
+            },
+        },
 
-    subtotal: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+        // Address snapshot used for this order
+        shippingAddress: {
+            type: shippingAddressSchema,
+            required: true,
+        },
 
-    shippingCharge: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0,
-    },
+        // Total price of all products before shipping
+        subtotal: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
 
-    totalAmount: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+        // Shipping charges
+        shippingCharge: {
+            type: Number,
+            required: true,
+            min: 0,
+            default: 0,
+        },
 
-    paymentStatus: {
-      type: String,
-      enum: [
-        "Pending",
-        "Paid",
-        "Failed",
-        "Refunded",
-      ],
-      default: "Pending",
-    },
+        // Final amount customer has to pay
+        totalAmount: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
 
-    orderStatus: {
-      type: String,
-      enum: [
-        "Pending",
-        "Confirmed",
-        "Processing",
-        "Shipped",
-        "Delivered",
-        "Cancelled",
-      ],
-      default: "Pending",
+        // --------------------------------------------------
+        // Payment Information
+        // --------------------------------------------------
+
+        // Payment method selected by the customer
+        paymentMethod: {
+            type: String,
+            enum: [
+                "COD",
+                "ONLINE",
+            ],
+            required: true,
+        },
+
+        // Payment gateway transaction ID
+        // This will be used for online payments
+        paymentId: {
+            type: String,
+            default: null,
+            trim: true,
+        },
+
+        // Current payment state
+        paymentStatus: {
+            type: String,
+            enum: [
+                "Pending",
+                "Paid",
+                "Failed",
+                "Refunded",
+            ],
+            default: "Pending",
+        },
+
+        // Stores the time when payment was successfully completed
+        paidAt: {
+            type: Date,
+            default: null,
+        },
+
+        // --------------------------------------------------
+        // Order Status
+        // --------------------------------------------------
+
+        orderStatus: {
+            type: String,
+            enum: [
+                "Pending",
+                "Confirmed",
+                "Processing",
+                "Shipped",
+                "Delivered",
+                "Cancelled",
+            ],
+            default: "Pending",
+        },
     },
-  },
-  {
-    timestamps: true,
-  }
+    {
+        // Automatically adds createdAt and updatedAt
+        timestamps: true,
+    }
 );
+
 
 const Order = mongoose.model("Order", orderSchema);
 
