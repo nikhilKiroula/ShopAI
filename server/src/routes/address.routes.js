@@ -5,7 +5,7 @@ import {
     getAddresses,
     getAddress,
     updateAddress,
-    deleteAddress,
+    deleteAddress, 
     setDefaultAddress,
 } from "../controllers/address.controller.js";
 
@@ -16,15 +16,10 @@ const router = Router();
 router.use(verifyJWT);
 
 router.post("/", addAddress);
-
 router.get("/", getAddresses);
-
 router.get("/:addressId", getAddress);
-
 router.patch("/:addressId", updateAddress);
-
 router.delete("/:addressId", deleteAddress);
-
 router.patch("/:addressId/default", setDefaultAddress);
 
 export default router;
