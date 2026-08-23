@@ -42,21 +42,23 @@ const Login = () => {
 
       toast.success("Login successful!");
 
-      navigate(ROUTES.HOME);
+      // Role-based redirect
+      if (response.data.user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate(ROUTES.HOME);
+      }
     } catch (error) {
       console.error("Login error:", error);
 
       toast.error(
-        error.response?.data?.message || "Login failed. Please try again."
+        error.response?.data?.message || "Login failed. Please try again.",
       );
     }
   };
 
   return (
-    <AuthLayout
-      title="Welcome Back 👋"
-      subtitle="Login to continue shopping."
-    >
+    <AuthLayout title="Welcome Back 👋" subtitle="Login to continue shopping.">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <AuthInput
           label="Email Address"

@@ -1,16 +1,21 @@
-import { Heart, ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart, LayoutDashboard } from "lucide-react";
 import ROUTES from "@/constants/routes";
 
 import ActionItem from "./ActionItem";
 import UserMenu from "./UserMenu";
-import { useCart } from "@/context";
-import { useWishlist } from "@/context";
+
+import { useCart, useWishlist, useAuth } from "@/context";
 
 const NavActions = () => {
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
+  const { user } = useAuth();
 
-  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const cartCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
   return (
     <div className="flex items-center gap-3 md:gap-6">
       <ActionItem
@@ -26,6 +31,14 @@ const NavActions = () => {
         label="Cart"
         badgeCount={cartCount}
       />
+
+      {user?.role === "admin" && (
+        <ActionItem
+          to="/admin/dashboard"
+          icon={LayoutDashboard}
+          label="Admin Panel"
+        />
+      )}
 
       <UserMenu />
     </div>
