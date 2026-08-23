@@ -16,6 +16,8 @@ import Checkout from "../pages/Checkout/Checkout";
 import AddProduct from "../pages/Admin/Products/AddProduct";
 import AdminProducts from "../pages/Admin/Products/Products";
 import EditProduct from "../pages/Admin/Products/EditProduct";
+import Addresses from "../pages/Address/Addresses";
+import AddressForm from "../pages/Address/AddressForm";
 
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
@@ -117,6 +119,33 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Orders />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "addresses",
+        element: (
+          <ProtectedRoute>
+            <Addresses />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "addresses/new",
+        element: (
+          <ProtectedRoute>
+            <AddressForm />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "addresses/:addressId/edit",
+        element: (
+          <ProtectedRoute>
+            <AddressForm />
           </ProtectedRoute>
         ),
       },
