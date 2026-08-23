@@ -18,6 +18,9 @@ import AdminProducts from "../pages/Admin/Products/Products";
 import EditProduct from "../pages/Admin/Products/EditProduct";
 import Addresses from "../pages/Address/Addresses";
 import AddressForm from "../pages/Address/AddressForm";
+import OrderDetails from "../pages/OrderDetails/OrderDetails";
+import AdminRoute from "./AdminRoute";
+import AdminOrders from "../pages/Admin/Orders/Orders";
 
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
@@ -115,10 +118,28 @@ const router = createBrowserRouter([
       },
 
       {
+        path: "admin/orders",
+        element: (
+          <AdminRoute>
+            <AdminOrders />
+          </AdminRoute>
+        ),
+      },
+      
+      {
         path: "orders",
         element: (
           <ProtectedRoute>
             <Orders />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "orders/:orderId",
+        element: (
+          <ProtectedRoute>
+            <OrderDetails />
           </ProtectedRoute>
         ),
       },
