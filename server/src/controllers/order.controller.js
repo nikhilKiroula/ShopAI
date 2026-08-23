@@ -12,13 +12,20 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 // =====================================================
 
 const createOrder = asyncHandler(async (req, res) => {
-    const { addressId } = req.body;
+    const { addressId, paymentMethod } = req.body;
 
     // Check whether address ID is provided
     if (!addressId) {
         throw new ApiError(
             400,
             "Address ID is required"
+        );
+    }
+
+    if (!['COD', 'ONLINE'].includes(paymentMethod)) {
+        throw new ApiError(
+            400,
+            "Payment method must be COD or ONLINE"
         );
     }
 
@@ -146,7 +153,9 @@ const createOrder = asyncHandler(async (req, res) => {
         shippingCharge,
         totalAmount,
 
-        // Payment will be handled separately later.
+        // COD orders remain pending until delivery. Online orders
+        // are marked paid only after Razorpay signature verification.
+        paymentMethod,
         paymentStatus: "Pending",
 
         // New order starts with Pending status.
@@ -309,6 +318,19 @@ const cancelOrder = asyncHandler(async (req, res) => {
         throw new ApiError(
             400,
             "Order cannot be cancelled"
+        );
+    }
+
+    // Do not cancel a successful online payment until a real
+    // Razorpay refund flow exists. This prevents an order from
+    // looking refunded in the database when no money was returned.
+    if (
+        order.paymentMethod === "ONLINE" &&
+        order.paymentStatus === "Paid"
+    ) {
+        throw new ApiError(
+            400,
+            "Paid online orders require a payment gateway refund"
         );
     }
 

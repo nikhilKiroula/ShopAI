@@ -47,11 +47,18 @@ const createPaymentOrder = asyncHandler(async (req, res) => {
         );
     }
 
+    if (order.paymentMethod !== "ONLINE") {
+        throw new ApiError(
+            400,
+            "Razorpay payment is only available for ONLINE orders"
+        );
+    }
+
     const existingPayment = await Payment.findOne({
         order: order._id,
     });
 
-    if (existingPayment) {
+    if (existingPayment && existingPayment.status !== "Failed") {
         return res
             .status(200)
             .json(
@@ -61,7 +68,8 @@ const createPaymentOrder = asyncHandler(async (req, res) => {
                         paymentId: existingPayment._id,
                         razorpayOrderId:
                             existingPayment.razorpayOrderId,
-                        amount: existingPayment.amount,
+                        // Razorpay Checkout expects the amount in paise.
+                        amount: Math.round(existingPayment.amount * 100),
                         currency: "INR",
                         keyId:
                             process.env.RAZORPAY_KEY_ID,
@@ -71,22 +79,32 @@ const createPaymentOrder = asyncHandler(async (req, res) => {
             );
     }
 
-    const razorpayOrder =
-        await razorpay.orders.create({
-            amount: Math.round(
-                order.totalAmount * 100
-            ),
-            currency: "INR",
-            receipt: order._id.toString(),
-        });
-
-    const payment = await Payment.create({
-        user: req.user._id,
-        order: order._id,
-        razorpayOrderId: razorpayOrder.id,
-        amount: order.totalAmount,
-        status: "Created",
+    const razorpayOrder = await razorpay.orders.create({
+        amount: Math.round(order.totalAmount * 100),
+        currency: "INR",
+        receipt: order._id.toString(),
     });
+
+    // A failed signature must get a fresh Razorpay order before retrying.
+    const payment = existingPayment
+        ? await Payment.findByIdAndUpdate(
+            existingPayment._id,
+            {
+                razorpayOrderId: razorpayOrder.id,
+                razorpayPaymentId: null,
+                razorpaySignature: null,
+                amount: order.totalAmount,
+                status: "Created",
+            },
+            { new: true }
+        )
+        : await Payment.create({
+            user: req.user._id,
+            order: order._id,
+            razorpayOrderId: razorpayOrder.id,
+            amount: order.totalAmount,
+            status: "Created",
+        });
 
     return res
         .status(201)
@@ -97,7 +115,7 @@ const createPaymentOrder = asyncHandler(async (req, res) => {
                     paymentId: payment._id,
                     razorpayOrderId:
                         razorpayOrder.id,
-                    amount: order.totalAmount,
+                    amount: razorpayOrder.amount,
                     currency: "INR",
                     keyId:
                         process.env.RAZORPAY_KEY_ID,
@@ -138,9 +156,17 @@ const verifyPayment = asyncHandler(async (req, res) => {
     }
 
     if (payment.status === "Paid") {
-        throw new ApiError(
-            400,
-            "Payment is already verified"
+        const order = await Order.findOne({
+            _id: payment.order,
+            user: req.user._id,
+        });
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                { payment, order },
+                "Payment is already verified"
+            )
         );
     }
 
@@ -189,6 +215,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
     }
 
     order.paymentStatus = "Paid";
+    order.paymentId = razorpayPaymentId;
+    order.paidAt = new Date();
     order.orderStatus = "Confirmed";
 
     await order.save();

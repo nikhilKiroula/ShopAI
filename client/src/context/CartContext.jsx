@@ -132,6 +132,7 @@ export const CartProvider = ({ children }) => {
         increaseQuantity,
         decreaseQuantity,
         clearCartItems,
+        refreshCart: fetchCart,
       }}
     >
       {children}

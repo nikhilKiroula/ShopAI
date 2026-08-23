@@ -1,20 +1,37 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
+import { useCart } from "@/context";
 import api from "@/services/api.service";
+import {
+  createPaymentOrder,
+  openRazorpayCheckout,
+  verifyPayment,
+} from "@/services/payment.service";
 
 const Checkout = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
-  const [order, setOrder] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { refreshCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
         const response = await api.get("/addresses");
+        const savedAddresses = response.data.data;
 
-        console.log("Address Object:", response.data.data[0]);
-        setAddresses(response.data.data);
+        setAddresses(savedAddresses);
+        setSelectedAddressId(
+          savedAddresses.find((address) => address.isDefault)?._id ||
+            savedAddresses[0]?._id ||
+            "",
+        );
       } catch (error) {
-        console.log(error.response?.data || error);
+        toast.error(error.response?.data?.message || "Could not load addresses");
       }
     };
 
@@ -23,24 +40,44 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     if (!selectedAddressId) {
-        alert("Please select a delivery address");
-        return;
+      toast.error("Please select a delivery address");
+      return;
     }
 
     try {
-        const response = await api.post("/orders", {
-            addressId: selectedAddressId,
-        });
+      setIsSubmitting(true);
 
-        console.log("Order created:", response.data);
+      const orderResponse = await api.post("/orders", {
+        addressId: selectedAddressId,
+        paymentMethod,
+      });
+      const order = orderResponse.data.data;
 
-        setOrder(response.data.data);
+      if (paymentMethod === "COD") {
+        await refreshCart();
+        toast.success("Order placed successfully. You can pay on delivery.");
+        navigate("/orders");
+        return;
+      }
+
+      const payment = await createPaymentOrder(order._id);
+      const result = await openRazorpayCheckout(payment);
+
+      await verifyPayment({
+        razorpayOrderId: result.razorpay_order_id,
+        razorpayPaymentId: result.razorpay_payment_id,
+        razorpaySignature: result.razorpay_signature,
+      });
+
+      await refreshCart();
+      toast.success("Payment successful and order confirmed.");
+      navigate("/orders");
     } catch (error) {
-        console.log(
-            error.response?.data || error
-        );
+      toast.error(error.response?.data?.message || error.message || "Could not place order");
+    } finally {
+      setIsSubmitting(false);
     }
-};
+  };
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-10">
@@ -51,7 +88,7 @@ const Checkout = () => {
 
         <div className="mt-4 space-y-4">
           {addresses.map((address) => (
-            <div key={address._id} className="rounded-lg border p-5">
+            <label key={address._id} className="block cursor-pointer rounded-lg border p-5">
               <div className="flex items-start gap-3">
                 <input
                   type="radio"
@@ -63,35 +100,55 @@ const Checkout = () => {
 
                 <div>
                   <h3 className="font-semibold">{address.label}</h3>
-
                   <p className="mt-1">{address.fullName}</p>
-
                   <p className="text-gray-600">{address.addressLine}</p>
-
                   <p className="text-gray-600">
                     {address.city}, {address.state} - {address.postalCode}
                   </p>
-
                   <p className="text-gray-600">{address.country}</p>
-
                   <p className="mt-1">Phone: {address.phone}</p>
-
-                  {address.isDefault && (
-                    <span className="mt-2 inline-block text-sm font-medium">
-                      Default Address
-                    </span>
-                  )}
                 </div>
               </div>
-            </div>
+            </label>
           ))}
         </div>
       </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold">Payment Method</h2>
+
+        <div className="mt-4 space-y-3">
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="COD"
+              checked={paymentMethod === "COD"}
+              onChange={(event) => setPaymentMethod(event.target.value)}
+            />
+            <span>Cash on Delivery</span>
+          </label>
+
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="ONLINE"
+              checked={paymentMethod === "ONLINE"}
+              onChange={(event) => setPaymentMethod(event.target.value)}
+            />
+            <span>Pay Online with Razorpay</span>
+          </label>
+        </div>
+      </div>
+
       <button
+        type="button"
         onClick={handlePlaceOrder}
-        className="mt-6 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white cursor-pointer"
+        disabled={isSubmitting}
+        className="mt-8 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Place Order
+        {isSubmitting ? "Processing..." : paymentMethod === "ONLINE" ? "Pay Now" : "Place Order"}
       </button>
     </section>
   );
