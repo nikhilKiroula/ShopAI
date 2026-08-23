@@ -1,6 +1,22 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+
+// =====================================================
+// Layouts
+// =====================================================
 
 import MainLayout from "../layouts/MainLayout";
+import AdminLayout from "../layouts/AdminLayout";
+
+// =====================================================
+// Route Guards
+// =====================================================
+
+import ProtectedRoute from "./ProtectedRoute";
+import AdminRoute from "./AdminRoute";
+
+// =====================================================
+// User Pages
+// =====================================================
 
 import Home from "../pages/Home/Home";
 import ProductDetails from "../pages/ProductDetails/ProductDetails";
@@ -10,30 +26,58 @@ import Cart from "../pages/Cart/Cart";
 import Wishlist from "../pages/Wishlist/Wishlist";
 import Profile from "../pages/Profile/Profile";
 import Orders from "../pages/Orders/Orders";
+import OrderDetails from "../pages/OrderDetails/OrderDetails";
+import Checkout from "../pages/Checkout/Checkout";
+import Addresses from "../pages/Address/Addresses";
+import AddressForm from "../pages/Address/AddressForm";
 import About from "../pages/About/About";
 import Contact from "../pages/Contact/Contact";
-import Checkout from "../pages/Checkout/Checkout";
+
+// =====================================================
+// Admin Pages
+// =====================================================
+
+import Dashboard from "../pages/Admin/Dashboard/Dashboard";
 import AddProduct from "../pages/Admin/Products/AddProduct";
 import AdminProducts from "../pages/Admin/Products/Products";
 import EditProduct from "../pages/Admin/Products/EditProduct";
-import Addresses from "../pages/Address/Addresses";
-import AddressForm from "../pages/Address/AddressForm";
-import OrderDetails from "../pages/OrderDetails/OrderDetails";
-import AdminRoute from "./AdminRoute";
 import AdminOrders from "../pages/Admin/Orders/Orders";
+import AdminOrderDetails from "../pages/Admin/Orders/OrderDetails";
+
+// =====================================================
+// Authentication Pages
+// =====================================================
 
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
+
+// =====================================================
+// Other Pages
+// =====================================================
+
 import NotFound from "../pages/NotFound/NotFound";
 
-import ProtectedRoute from "./ProtectedRoute";
+// =====================================================
+// Application Router
+// =====================================================
 
 const router = createBrowserRouter([
+  // ===================================================
+  // USER APPLICATION ROUTES
+  // ===================================================
+
   {
     path: "/",
+
+    // MainLayout contains navbar/footer for normal users
     element: <MainLayout />,
+
     children: [
+      // -------------------------------
+      // Public Routes
+      // -------------------------------
+
       {
         index: true,
         element: <Home />,
@@ -55,6 +99,20 @@ const router = createBrowserRouter([
       },
 
       {
+        path: "about",
+        element: <About />,
+      },
+
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+
+      // -------------------------------
+      // Protected User Routes
+      // -------------------------------
+
+      {
         path: "cart",
         element: (
           <ProtectedRoute>
@@ -68,33 +126,6 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Checkout />
-          </ProtectedRoute>
-        ),
-      },
-
-      {
-        path: "admin/products/add",
-        element: (
-          <ProtectedRoute>
-            <AddProduct />
-          </ProtectedRoute>
-        ),
-      },
-
-      {
-        path: "admin/products",
-        element: (
-          <ProtectedRoute>
-            <AdminProducts />
-          </ProtectedRoute>
-        ),
-      },
-
-      {
-        path: "admin/products/edit/:productId",
-        element: (
-          <ProtectedRoute>
-            <EditProduct />
           </ProtectedRoute>
         ),
       },
@@ -117,15 +148,10 @@ const router = createBrowserRouter([
         ),
       },
 
-      {
-        path: "admin/orders",
-        element: (
-          <AdminRoute>
-            <AdminOrders />
-          </AdminRoute>
-        ),
-      },
-      
+      // -------------------------------
+      // User Orders
+      // -------------------------------
+
       {
         path: "orders",
         element: (
@@ -143,6 +169,10 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
+      // -------------------------------
+      // User Addresses
+      // -------------------------------
 
       {
         path: "addresses",
@@ -170,18 +200,87 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+    ],
+  },
+
+  // ===================================================
+  // ADMIN APPLICATION ROUTES
+  // ===================================================
+
+  {
+    path: "/admin",
+
+    // AdminRoute checks authentication + admin role
+    element: (
+      <AdminRoute>
+        <AdminLayout />
+      </AdminRoute>
+    ),
+
+    children: [
+      // -------------------------------
+      // Admin Dashboard
+      // -------------------------------
 
       {
-        path: "about",
-        element: <About />,
+        index: true,
+
+        // /admin
+        element: <Navigate to="/admin/dashboard" replace />,
       },
 
       {
-        path: "contact",
-        element: <Contact />,
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+
+      // -------------------------------
+      // Admin Products
+      // -------------------------------
+
+      {
+        path: "products",
+
+        // /admin/products
+        element: <AdminProducts />,
+      },
+
+      {
+        path: "products/add",
+
+        // /admin/products/add
+        element: <AddProduct />,
+      },
+
+      {
+        path: "products/edit/:productId",
+
+        // /admin/products/edit/:productId
+        element: <EditProduct />,
+      },
+
+      // -------------------------------
+      // Admin Orders
+      // -------------------------------
+
+      {
+        path: "orders",
+
+        // /admin/orders
+        element: <AdminOrders />,
+      },
+
+      {
+        path: "orders/:orderId",
+        // /admin/orders/:orderId
+        element: <AdminOrderDetails />,
       },
     ],
   },
+
+  // ===================================================
+  // AUTHENTICATION ROUTES
+  // ===================================================
 
   {
     path: "/login",
@@ -197,6 +296,10 @@ const router = createBrowserRouter([
     path: "/forgot-password",
     element: <ForgotPassword />,
   },
+
+  // ===================================================
+  // 404 ROUTE
+  // ===================================================
 
   {
     path: "*",
