@@ -1,9 +1,10 @@
 import { NavLink, Outlet } from "react-router-dom";
 import {
-    LayoutDashboard,
-    Package,
-    ShoppingCart,
-    Store,
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Store,
+  Users,
 } from "lucide-react";
 
 // =====================================================
@@ -18,116 +19,90 @@ import {
 // =====================================================
 
 const AdminLayout = () => {
-    // -------------------------------------------------
-    // Sidebar link classes
-    // -------------------------------------------------
-    // NavLink automatically `isActive` provide karta hai.
-    // Isse active admin page ko highlight kar sakte hain.
+  // -------------------------------------------------
+  // Sidebar link classes
+  // -------------------------------------------------
+  // NavLink automatically `isActive` provide karta hai.
+  // Isse active admin page ko highlight kar sakte hain.
 
-    const getNavLinkClass = ({ isActive }) =>
-        `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition ${
-            isActive
-                ? "bg-blue-600 text-white"
-                : "text-gray-700 hover:bg-gray-100"
-        }`;
+  const getNavLinkClass = ({ isActive }) =>
+    `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition ${
+      isActive ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-100"
+    }`;
 
-    return (
-        <div className="min-h-screen bg-gray-100">
-
-            <div className="flex min-h-screen">
-
-                {/* =====================================
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <div className="flex min-h-screen">
+        {/* =====================================
                     Admin Sidebar
                 ===================================== */}
 
-                <aside className="hidden w-64 shrink-0 border-r bg-white md:block">
+        <aside className="hidden w-64 shrink-0 border-r bg-white md:block">
+          {/* Sticky sidebar */}
+          <div className="sticky top-0 flex h-screen flex-col p-5">
+            {/* Admin Logo / Title */}
+            <div className="mb-8 flex items-center gap-2">
+              <Store size={26} />
 
-                    {/* Sticky sidebar */}
-                    <div className="sticky top-0 flex h-screen flex-col p-5">
+              <h1 className="text-xl font-bold">ShopAI Admin</h1>
+            </div>
 
-                        {/* Admin Logo / Title */}
-                        <div className="mb-8 flex items-center gap-2">
-                            <Store size={26} />
-
-                            <h1 className="text-xl font-bold">
-                                ShopAI Admin
-                            </h1>
-                        </div>
-
-                        {/* =============================
+            {/* =============================
                             Admin Navigation
                         ============================= */}
 
-                        <nav className="space-y-2">
+            <nav className="space-y-2">
+              {/* Dashboard */}
+              <NavLink to="/admin" end className={getNavLinkClass}>
+                <LayoutDashboard size={20} />
 
-                            {/* Dashboard */}
-                            <NavLink
-                                to="/admin"
-                                end
-                                className={getNavLinkClass}
-                            >
-                                <LayoutDashboard size={20} />
+                <span>Dashboard</span>
+              </NavLink>
 
-                                <span>
-                                    Dashboard
-                                </span>
-                            </NavLink>
+              {/* Products */}
+              <NavLink to="/admin/products" className={getNavLinkClass}>
+                <Package size={20} />
 
-                            {/* Products */}
-                            <NavLink
-                                to="/admin/products"
-                                className={getNavLinkClass}
-                            >
-                                <Package size={20} />
+                <span>Products</span>
+              </NavLink>
 
-                                <span>
-                                    Products
-                                </span>
-                            </NavLink>
+              {/* Orders */}
+              <NavLink to="/admin/orders" className={getNavLinkClass}>
+                <ShoppingCart size={20} />
 
-                            {/* Orders */}
-                            <NavLink
-                                to="/admin/orders"
-                                className={getNavLinkClass}
-                            >
-                                <ShoppingCart size={20} />
+                <span>Orders</span>
+              </NavLink>
 
-                                <span>
-                                    Orders
-                                </span>
-                            </NavLink>
+              {/* Users */}
+              <NavLink to="/admin/users" className={getNavLinkClass}>
+                <Users size={20} />
+                <span>Users</span>
+              </NavLink>
+            </nav>
 
-                        </nav>
-
-                        {/* =================================
+            {/* =================================
                             Bottom Section
                         ================================= */}
 
-                        <div className="mt-auto border-t pt-5">
+            <div className="mt-auto border-t pt-5">
+              <NavLink
+                to="/"
+                className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+              >
+                <Store size={20} />
 
-                            <NavLink
-                                to="/"
-                                className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
-                            >
-                                <Store size={20} />
+                <span>Back to Store</span>
+              </NavLink>
+            </div>
+          </div>
+        </aside>
 
-                                <span>
-                                    Back to Store
-                                </span>
-                            </NavLink>
-
-                        </div>
-
-                    </div>
-                </aside>
-
-                {/* =====================================
+        {/* =====================================
                     Main Admin Content
                 ===================================== */}
 
-                <main className="min-w-0 flex-1">
-
-                    {/* 
+        <main className="min-w-0 flex-1">
+          {/* 
                         Nested admin routes yahan render hongi.
 
                         /admin
@@ -139,14 +114,11 @@ const AdminLayout = () => {
                         /admin/orders
                             -> Orders
                     */}
-                    <Outlet />
-
-                </main>
-
-            </div>
-
-        </div>
-    );
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
 };
 
 export default AdminLayout;

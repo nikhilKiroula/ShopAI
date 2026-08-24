@@ -43,6 +43,7 @@ import AdminProducts from "../pages/Admin/Products/Products";
 import EditProduct from "../pages/Admin/Products/EditProduct";
 import AdminOrders from "../pages/Admin/Orders/Orders";
 import AdminOrderDetails from "../pages/Admin/Orders/OrderDetails";
+import AdminUsers from "../pages/Admin/Users/Users";
 
 // =====================================================
 // Authentication Pages
@@ -274,6 +275,15 @@ const router = createBrowserRouter([
         path: "orders/:orderId",
         // /admin/orders/:orderId
         element: <AdminOrderDetails />,
+      },
+
+      // -------------------------------
+      // All Users
+      // -------------------------------
+
+      {
+        path: "users",
+        element: <AdminUsers />,
       },
     ],
   },
