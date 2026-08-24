@@ -12,6 +12,7 @@ import orderRouter from "./routes/order.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
 import adminOrderRoutes from "./routes/adminOrder.routes.js";
 import adminDashboardRoutes from "./routes/adminDashboard.routes.js";
+import adminUserRoutes from "./routes/adminUser.routes.js";
 
 
 import errorMiddleware from "./middlewares/error.middleware.js";
@@ -39,6 +40,8 @@ app.use("/api/orders", orderRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/admin/dashboard",adminDashboardRoutes);
+app.use("/api/admin/users", adminUserRoutes);
+
 
 app.use(errorMiddleware);
 

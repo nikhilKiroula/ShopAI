@@ -29,6 +29,10 @@ const userSchema = new Schema(
             default: "user",
         },
 
+        isActive: {
+            type: Boolean,
+            default: true,
+        },
         refreshToken: {
             type: String,
             default: null,
