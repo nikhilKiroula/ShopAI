@@ -15,7 +15,7 @@ const categories = [
   "Sports",
   "Books",
   "Gaming",
-];
+]; 
 
 const AddProduct = () => {
   const [formData, setFormData] = useState({

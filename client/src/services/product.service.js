@@ -89,48 +89,12 @@ export const getProductById = async (id) => {
 
 export const getCategories = async () => {
   try {
-    const response = await fetch(
-      "https://fakestoreapi.com/products/categories"
-    );
+    const response = await api.get("/products/categories")
 
-    return await response.json();
+    return await response.data.data;
   } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
-
-// Get Products By Category
-
-export const getProductsByCategory = async (category) => {
-  try {
-    const response = await fetch(
-      `https://fakestoreapi.com/products/category/${category}`
-    );
-
-    const data = await response.json();
-
-    return data.map((product) => ({
-      id: product.id,
-
-      title: product.title,
-
-      image: product.image,
-
-      price: product.price,
-
-      discount: 20,
-
-      rating: product.rating.rate,
-
-      ratingCount: product.rating.count,
-
-      category: product.category,
-
-      description: product.description,
-    }));
-  } catch (error) {
-    console.error(error);
+    console.error("Error fetching categories:",
+      error.response?.data || error.message);
     return [];
   }
 };
@@ -152,18 +116,18 @@ export const getAdminProducts = async () => {
 };
 
 export const getAdminProductById = async (id) => {
-    try {
-        const response = await api.get(`/products/admin/${id}`);
+  try {
+    const response = await api.get(`/products/admin/${id}`);
 
-        return response.data.data;
-    } catch (error) {
-        console.error(
-            "Get admin product error:",
-            error.response?.data || error
-        );
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Get admin product error:",
+      error.response?.data || error
+    );
 
-        throw error;
-    }
+    throw error;
+  }
 };
 
 // Delete a product

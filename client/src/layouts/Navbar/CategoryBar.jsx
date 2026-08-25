@@ -1,60 +1,75 @@
 import { useEffect, useState } from "react";
-
+import { getCategories } from "@/services/product.service";
 import NavLinks from "./NavLinks";
 
 const CategoryBar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [isScrolled, setIsScrolled] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 120);
-    };
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const data = await getCategories();
+            setCategories(data);
+        };
 
-    window.addEventListener("scroll", handleScroll);
+        fetchCategories();
+    }, []);
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 120);
+        };
 
-  return (
-    <section
-      className={`
-        border-b
-        border-gray-200
-        bg-white
-        transition-all
-        duration-300
-        ${isScrolled ? "py-1" : "py-2"}
-      `}
-    >
-      <div
-        className="
-          mx-auto
-          max-w-7xl
-          overflow-x-auto
-          hide-scrollbar
-        "
-      >
-        <nav
-          className={`
-            flex
-            min-w-max
-            items-center
-            justify-start
-            gap-3
-            px-4
-            transition-all
-            duration-300
+        window.addEventListener("scroll", handleScroll);
 
-            xl:justify-center
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
 
-            ${isScrolled ? "gap-4 lg:gap-4 xl:gap-5" : "gap-3 lg:gap-5 xl:gap-6"}
-          `}
+    return (
+        <section
+            className={`
+                border-b
+                border-gray-200
+                bg-white
+                transition-all
+                duration-300
+                ${isScrolled ? "py-1" : "py-2"}
+            `}
         >
-          <NavLinks isScrolled={isScrolled} />
-        </nav>
-      </div>
-    </section>
-  );
+            <div
+                className="
+                    mx-auto
+                    max-w-7xl
+                    overflow-x-auto
+                    hide-scrollbar
+                "
+            >
+                <nav
+                    className={`
+                        flex
+                        min-w-max
+                        items-center
+                        justify-start
+                        gap-3
+                        px-4
+                        xl:justify-center
+                        ${
+                            isScrolled
+                                ? "gap-4 lg:gap-4 xl:gap-5"
+                                : "gap-3 lg:gap-5 xl:gap-6"
+                        }
+                    `}
+                >
+                    <NavLinks
+                        categories={categories}
+                        isScrolled={isScrolled}
+                    />
+                </nav>
+            </div>
+        </section>
+    );
 };
 
 export default CategoryBar;

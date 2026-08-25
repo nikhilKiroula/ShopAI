@@ -8,7 +8,7 @@ const AdminRoute = ({ children }) => {
   const { user } = useAuth();
 
   // If user is not logged in,
-  // send them to the login page.
+  // send them to the login page. 
   if (!user) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }

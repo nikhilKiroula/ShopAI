@@ -61,11 +61,23 @@ const Products = () => {
     <section className="mx-auto max-w-7xl px-4 py-10">
       {/* Header */}
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Products</h1>
+      <header className="flex justify-between items-end">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
 
-        <p className="mt-1 text-gray-500">{products.length} products found</p>
-      </div>
+          <p className="mt-1 text-gray-500">{products.length} products found</p>
+        </div>
+
+        <div className="mb-8">
+          <button
+            type="button"
+            onClick={() => navigate(`/admin/products/add`)}
+            className="cursor-pointer rounded-lg bg-[#1e6ae3] px-4 py-2 font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+          >
+            Add New Product
+          </button>
+        </div>
+      </header>
 
       {/* Products Table */}
 

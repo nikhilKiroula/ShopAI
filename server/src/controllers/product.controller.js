@@ -188,6 +188,23 @@ const getAdminProductById = asyncHandler(async (req, res) => {
         );
 });
 
+
+const getCategories = asyncHandler(async (req, res) => {
+    const categories = await Product.distinct("category", {
+        isActive: true,
+    });
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                categories,
+                "Categories fetched successfully"
+            )
+        );
+});
+
 const updateProduct = asyncHandler(async (req, res) => {
     const { productId } = req.params;
     console.log("body", req.body);
@@ -296,4 +313,5 @@ export {
     getAdminProductById,
     updateProduct,
     deleteProduct,
+    getCategories,
 }

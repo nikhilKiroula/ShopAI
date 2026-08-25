@@ -10,11 +10,13 @@ import {
     updateProduct,
     getAdminProducts,
     getAdminProductById,
+    getCategories,
 } from "../controllers/product.controller.js";
 
 const router = Router();
 
 router.post("/", verifyJWT, verifyAdmin, upload.array("images", 5), createProduct);
+router.get("/categories", getCategories)
 router.get("/", getAllProducts);
 router.get("/admin", verifyJWT, verifyAdmin, getAdminProducts);
 router.get("/admin/:productId", verifyJWT, verifyAdmin, getAdminProductById);
