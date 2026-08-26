@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-        "dev": "nodemon src/index.js",
-        "start": "node src/index.js",
-        "seed": "node seed/products.js"
-    },
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "seed": "node seed/products.js"
+  },
   "keywords": [
     "javascript",
     "nodejs",
