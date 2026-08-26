@@ -21,7 +21,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://shopaitest.netlify.app",
+    origin: ['http://localhost:5173', 'https://shopaitest.netlify.app'],
     credentials: true,
   })
 );

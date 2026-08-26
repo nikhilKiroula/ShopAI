@@ -1,35 +1,28 @@
-import {
-  Mail,
-  Phone,
-  MapPin,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { Mail, Phone, MapPin } from "lucide-react";
 
 const footerSections = [
   {
+    title: "Shop",
+    links: [
+      { label: "All Products", path: "/products" },
+      { label: "Categories", path: "/categories" },
+      { label: "Wishlist", path: "/wishlist" },
+      { label: "Cart", path: "/cart" },
+    ],
+  },
+  {
+    title: "Account",
+    links: [
+      { label: "Profile", path: "/profile" },
+      { label: "Orders", path: "/orders" },
+    ],
+  },
+  {
     title: "Company",
     links: [
-      "About",
-      "Careers",
-      "Blog",
-      "Contact",
-    ],
-  },
-  {
-    title: "Customer",
-    links: [
-      "Help Center",
-      "Shipping",
-      "Returns",
-      "FAQs",
-    ],
-  },
-  {
-    title: "Categories",
-    links: [
-      "Electronics",
-      "Fashion",
-      "Beauty",
-      "Gaming",
+      { label: "About Us", path: "/about" },
+      { label: "Contact Us", path: "/contact" },
     ],
   },
 ];
@@ -41,9 +34,7 @@ const FooterLinks = () => {
         grid
         gap-10
         py-10
-
         sm:grid-cols-2
-
         lg:grid-cols-4
       "
     >
@@ -55,17 +46,17 @@ const FooterLinks = () => {
 
           <ul className="space-y-3">
             {section.links.map((link) => (
-              <li key={link}>
-                <button
+              <li key={link.label}>
+                <Link
+                  to={link.path}
                   className="
-                    cursor-pointer
                     text-gray-400
                     transition-colors
                     hover:text-[#0B57D0]
                   "
                 >
-                  {link}
-                </button>
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>
@@ -80,19 +71,19 @@ const FooterLinks = () => {
         </h3>
 
         <div className="space-y-4 text-gray-400">
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
             <Mail size={18} />
-            support@shopai.com
+            <span>support@shopai.com</span>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
             <Phone size={18} />
-            +91 93896 23994
+            <span>+91 93896 23994</span>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
             <MapPin size={18} />
-            New Delhi, India
+            <span>New Delhi, India</span>
           </div>
         </div>
       </div>
