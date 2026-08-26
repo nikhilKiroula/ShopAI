@@ -16,9 +16,7 @@ const Profile = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       {/* Page Heading */}
-      <h1 className="mb-6 text-3xl font-bold">
-        My Profile
-      </h1>
+      <h1 className="mb-6 text-3xl font-bold">My Profile</h1>
 
       <div className="space-y-5">
         {/* Profile Information */}
@@ -30,20 +28,14 @@ const Profile = () => {
           <div className="space-y-4">
             {/* Name */}
             <div>
-              <p className="text-sm text-gray-500">
-                Name
-              </p>
+              <p className="text-sm text-gray-500">Name</p>
 
-              <p className="font-medium text-gray-900">
-                {user?.name || "N/A"}
-              </p>
+              <p className="font-medium text-gray-900">{user?.name || "N/A"}</p>
             </div>
 
             {/* Email */}
             <div>
-              <p className="text-sm text-gray-500">
-                Email
-              </p>
+              <p className="text-sm text-gray-500">Email</p>
 
               <p className="font-medium text-gray-900">
                 {user?.email || "N/A"}
@@ -52,9 +44,7 @@ const Profile = () => {
 
             {/* Role */}
             <div>
-              <p className="text-sm text-gray-500">
-                Role
-              </p>
+              <p className="text-sm text-gray-500">Role</p>
 
               <p className="font-medium capitalize text-gray-900">
                 {user?.role || "user"}
@@ -79,9 +69,22 @@ const Profile = () => {
             </p>
           </div>
 
-          <span className="text-2xl text-gray-400">
-            →
-          </span>
+          <span className="text-2xl text-gray-400">→</span>
+        </button>
+
+        {/* My Orders */}
+        <button
+          type="button"
+          onClick={() => navigate("/orders")}
+          className="flex w-full items-center justify-between rounded-xl border bg-white p-6 text-left shadow-sm transition hover:border-[#0B57D0] hover:shadow-md"
+        >
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">My Orders</h2>
+
+            <p className="mt-1 text-sm text-gray-500">Manage your Orders</p>
+          </div>
+
+          <span className="text-2xl text-gray-400">→</span>
         </button>
 
         {/* Logout */}
