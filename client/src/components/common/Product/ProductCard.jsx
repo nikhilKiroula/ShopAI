@@ -19,17 +19,22 @@ const ProductCard = ({ product }) => {
 
   const originalPrice = Math.round(price / (1 - discount / 100));
 
-  const handleAddToCart = () => {
-    addToCart(product);
-
-    toast.success("Product added to cart");
+  const handleAddToCart = async () => {
+    try {
+      await addToCart(product);
+      toast.success("Product added to cart");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to add product to cart",
+      );
+    }
   };
 
-  const handleWishlist = (e) => {
+  const handleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    toggleWishlist(product);
+    await toggleWishlist(product);
   };
 
   return (

@@ -54,8 +54,10 @@ export const CartProvider = ({ children }) => {
 
       // Refresh the cart after adding the product
       await fetchCart();
+      return response.data;
     } catch (error) {
-      console.log(error.response?.data || error);
+      console.log("Add to cart error:", error.response?.data || error);
+      throw error;
     }
   };
 

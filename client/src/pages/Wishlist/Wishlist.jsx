@@ -1,37 +1,29 @@
-import {
-  Heart,
-  ShoppingCart,
-  Trash2,
-} from "lucide-react";
+import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 
 import { useWishlist } from "@/context";
 import { useCart } from "@/context";
 
 const Wishlist = () => {
-  const {
-    wishlistItems,
-    removeFromWishlist,
-  } = useWishlist();
+  const { wishlistItems, removeFromWishlist } = useWishlist();
 
   const { addToCart } = useCart();
 
-  const handleMoveToCart = (item) => {
-    addToCart(item);
-    removeFromWishlist(item.id);
+  const handleMoveToCart = async (item) => {
+    try {
+      await addToCart(item);
+      await removeFromWishlist(item.id);
+    } catch (error) {
+      console.error("Move to cart error:", error);
+    }
   };
 
   if (wishlistItems.length === 0) {
     return (
       <section className="mx-auto flex h-[70vh] max-w-7xl items-center justify-center px-4">
         <div className="text-center">
-          <Heart
-            size={60}
-            className="mx-auto text-red-500"
-          />
+          <Heart size={60} className="mx-auto text-red-500" />
 
-          <h2 className="mt-5 text-3xl font-bold">
-            Your Wishlist is Empty
-          </h2>
+          <h2 className="mt-5 text-3xl font-bold">Your Wishlist is Empty</h2>
 
           <p className="mt-3 text-gray-500">
             Save your favourite products here.
@@ -47,13 +39,9 @@ const Wishlist = () => {
 
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">
-            My Wishlist
-          </h1>
+          <h1 className="text-3xl font-bold">My Wishlist</h1>
 
-          <p className="mt-2 text-gray-500">
-            {wishlistItems.length} Items
-          </p>
+          <p className="mt-2 text-gray-500">{wishlistItems.length} Items</p>
         </div>
       </div>
 
@@ -140,18 +128,13 @@ const Wishlist = () => {
                   text-[#0B57D0]
                 "
               >
-                ₹
-                {Math.round(
-                  item.price * 85
-                ).toLocaleString("en-IN")}
+                ₹{Math.round(item.price * 85).toLocaleString("en-IN")}
               </p>
 
               <div className="mt-auto flex gap-3 pt-5">
                 <button
                   type="button"
-                  onClick={() =>
-                    handleMoveToCart(item)
-                  }
+                  onClick={() => handleMoveToCart(item)}
                   className="
                     flex
                     flex-1
@@ -177,9 +160,7 @@ const Wishlist = () => {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    removeFromWishlist(item.id)
-                  }
+                  onClick={() => removeFromWishlist(item.id)}
                   className="
                     cursor-pointer
                     rounded-lg
