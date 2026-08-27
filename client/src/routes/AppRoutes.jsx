@@ -52,6 +52,7 @@ import AdminUsers from "../pages/Admin/Users/Users";
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword/ResetPassword";
 
 // =====================================================
 // Other Pages
@@ -305,6 +306,11 @@ const router = createBrowserRouter([
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+
+  {
+    path: "/reset-password/:token",
+    element: <ResetPassword />,
   },
 
   // ===================================================
